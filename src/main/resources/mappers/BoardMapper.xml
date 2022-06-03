@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.board.mapper.BoardMapper">
+
+	<sql id="boardColumns">
+			  idx			/** 번호(PK) */
+			, title			/** 제목 */
+			, content		/** 내용 */
+			, writer		/** 작성자 */
+			, view_cnt		/** 조회수 */
+			, notice_yn		/** 공지글 여부 */
+			, secret_yn		/** 비밀글 여부 */
+			, delete_yn		/** 삭제 여부 */
+			, insert_time	/** 등록 시간 */
+			, update_time	/** 수정 시간 */
+			, delete_time	/** 삭제 시간 */
+	</sql>
+	
+
+	<insert id="insertBoard" parameterType = "BoardDTO">
+		INSERT INTO tb_board(
+			  idx			/** 번호(PK) */
+			, title			/** 제목 */
+			, content		/** 내용 */
+			, writer		/** 작성자 */
+			, pswd			/** 비밀번호 */
+			, view_cnt		/** 조회수 */
+			, notice_yn		/** 공지글 여부 */
+			, secret_yn		/** 비밀글 여부 */
+			, delete_yn		/** 삭제 여부 */
+			, insert_time	/** 등록 시간 */
+			, update_time	/** 수정 시간 */
+			, delete_time	/** 삭제 시간 */
+			, group_no		/** 그룹 번호 */
+			, depth			/** 그룹내 순서 */
+		) VALUES (
+			  #{idx}
+			, #{title}
+			, #{content}
+			, #{writer}
+			, #{pswd}
+			, 0
+			, #{noticeYn, typeHandler=com.board.handler.BooleanHandler}
+			, #{secretYn, typeHandler=com.board.handler.BooleanHandler}
+			, 'N'
+			, NOW()
+			, NULL
+			, NULL
+			, #{groupNo}
+			, #{depth}
+		)
+	</insert>
+	
+	<select id="selectBoardDetail" parameterType="long" resultType="BoardDTO">
+		SELECT 
+				<include refid="boardColumns" />
+		  FROM 
+		  		tb_board
+		 WHERE 
+		 		delete_yn = 'N'
+		   AND 
+		   		idx = #{idx} 
+	</select>
+	
+	<update id="updateBoard" parameterType="BoardDTO">
+		UPDATE 
+				tb_board
+		   SET   
+		   		 update_time = NOW()
+		       , title = #{title}
+		       , content = #{content}
+		       , writer = #{writer}
+		       , pswd = #{pswd}
+		       , notice_yn = #{noticeYn, typeHandler=com.board.handler.BooleanHandler}
+		       , secret_yn = #{secretYn, typeHandler=com.board.handler.BooleanHandler}
+		 WHERE 
+		 		idx= #{idx}
+	</update>
+	
+	<update id="deleteBoard" parameterType="long">
+		UPDATE 
+				tb_board
+		   SET   
+		   		 delete_yn = 'Y'
+		       , delete_time = NOW()
+		 WHERE 
+		 		idx=#{idx}
+	</update>
+	
+	<select id="selectBoardList"  parameterType="Paging" resultType="BoardDTO" >
+	    SELECT
+				  <!-- @ROWNUM := @ROWNUM + 1 as num -->
+				  row_number() OVER(ORDER BY notice_yn DESC, group_no DESC, depth DESC) as num
+				, idx			/** 번호(PK) */
+				, title			/** 제목 */
+				, content		/** 내용 */
+				, writer		/** 작성자 */
+				, view_cnt		/** 조회수 */
+				, notice_yn		/** 공지글 여부 */
+				, secret_yn		/** 비밀글 여부 */
+				, delete_yn		/** 삭제 여부 */
+				, insert_time	/** 등록 시간 */
+				, update_time	/** 수정 시간 */
+				, delete_time	/** 삭제 시간 */
+				, group_no		/** 그룹번호 */
+				, depth			/** 답글 정렬 */
+				, parent_idx
+		FROM
+			      tb_board
+                <!-- , (select @rownum:=0) as n -->
+	    WHERE
+	    	    delete_yn='N'
+	 ORDER BY
+	 			  group_no
+	 			, depth
+	    <!-- ORDER BY
+				  notice_yn ASC
+                , insert_time DESC -->
+        LIMIT #{rowNum} OFFSET #{start}
+			  
+	</select>
+	
+	<select id="selectBoardTotalCount" resultType="int">
+		SELECT
+				COUNT(*)
+		  FROM
+		  		tb_board
+		 WHERE
+		 		delete_yn = 'N' 
+	</select>
+	
+	<update id="setViewCnt" parameterType="Long">
+		UPDATE 
+				tb_board
+   		   SET 
+   		   		view_cnt = view_cnt+1
+ 		 WHERE 
+ 		 		idx = #{idx}
+	</update>
+	
+	<select id="getPswd" parameterType="BoardDTO" resultType="string">
+		SELECT
+				pswd
+		  FROM
+		  		tb_board
+		  WHERE
+		  		idx=#{idx}
+		  	AND 
+		  		secret_yn = 'Y'
+	</select>
+	
+	<select id = "getLastIdx" resultType = "Long" >
+		SELECT
+				IFNULL(MAX(idx),0) idx
+		  FROM
+		  		tb_board
+	</select>
+	
+	<select id="getLastGroupNo" resultType="Integer">
+		SELECT 
+				IFNULL(MAX(group_no),0) group_no
+        FROM
+				tb_board
+	</select>
+	
+	<select id="getLastDepth" parameterType="BoardDTO" resultType="Integer">
+		SELECT 
+				depth
+				<!-- IFNULL(MAX(depth),0) depth -->
+        FROM
+				tb_board
+		WHERE
+				idx = #{parentIdx}
+				<!-- group_no = #{groupNo} -->
+	</select>
+
+</mapper>

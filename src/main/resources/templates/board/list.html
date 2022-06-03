@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<style>
+	table, td, th {
+	  border : 1px solid black;
+	  border-collapse : collapse;
+	}
+	
+	th, td {
+	  text-align: center;
+	}
+</style>
+<body>
+	<div>
+		<span>
+			총 <th:block th:text="${boardList.Total}" />개
+		</span>
+		<table>
+			<colgroup>
+				<col width="100px" />
+				<col width="250px" />
+				<col width="150px" />
+				<col width="150px" />
+				<col width="150px" />
+			</colgroup>
+			<thead>
+				<tr>
+					<th>번호</th>
+					<th>제목</th>
+					<th>작성자</th>
+					<th>등록일</th>
+					<th>등록 시간</th>
+					<th>조회수</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="board : ${boardList.Data}">
+					<td th:text="${board.idx}">글 번호</td>
+					<td>
+						<a id="title" th:if="${#strings.equals(board.secretYn,'false')}" th:href="@{/board/detail.do(idx=${board.idx})}" th:text="${board.title}"></a>
+						<a id="secretTitle" class="secretTitle" href="#" th:data-idx="${board.idx}"  th:unless="${#strings.equals(board.secretYn,'false')}" th:text="비밀글"></a>
+					</td>
+					<td th:text="${board.writer}">작성자</td>
+					<td th:text="${#temporals.format(board.insertTime, 'yyyy-MM-dd')}">등록일</td>
+					<td th:text="${#temporals.format(board.insertTime, 'hh:mm')}">등록 시간</td>
+					<td th:text="${board.viewCnt}">조회수</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<br>
+	<div>
+		<button id="registBoard">글쓰기</button>
+	</div>
+
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script th:inline="javascript">
+	//글쓰기 버튼 클릭시
+	$('#registBoard').on("click", (function(){
+		location.replace("/board/write.do")
+	}))
+	
+	//비밀글 클릭시 비밀번호 확인
+	$('.secretTitle').on("click", (function(e){
+		e.preventDefault();
+		const pswdChk = prompt("비밀번호",'')
+		
+		const idx = $('#secretTitle').data('idx')
+		
+		const data = {
+			idx : idx,
+			pswd : pswdChk
+		}
+		
+		if(pswdChk == null) {
+			alert("취소")
+		} else{
+
+	 		$.ajax({
+				url: "/board/pswdCheck.do",
+				type: "GET",
+				data: data,
+				dataType: "json"
+	 		})
+			.done(function(json){
+				if(json == true){
+					console.log("yes~~")
+					location.replace("/board/detail.do?idx="+idx)
+				}
+				else {
+					alert("비밀번호를 확인해주세요.")
+				}
+			})
+		}
+	})) 
+</script>
+</body>
+</html>

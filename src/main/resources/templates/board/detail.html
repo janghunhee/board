@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<style>
+	table, td, th {
+	  border : 1px solid black;
+	  border-collapse : collapse;
+	}
+	
+	th, td {
+	  text-align: center;
+	}
+</style>
+</head>
+<body>
+<h2>게시글 상세/수정</h2>
+	
+	<div>
+		<form th:object="${board}" >
+			<div>
+				<label th:if="${#strings.equals(board.noticeYn,'true')}">#공지#</label>
+			</div>
+			<div>
+				<label for="title">제목: </label> 
+				<label th:text="*{title}"></label>
+				
+			</div>
+			<div>
+				<label for="writer">이름: </label>
+				<label th:text="*{writer}"></label>
+			</div>
+			<div>
+				<label for="content">내용: </label>
+				<div>
+					<label th:text="*{content}"></label>
+				</div>
+			</div>
+		</form>
+		<div>
+			<label for="viewCnt">조회수: </label>
+			<label th:text="${board.viewCnt}"></label>
+		</div>
+		<div class="btn-area">
+			<button id="goBack">뒤로가기</button>
+			<button id="updateBoard" >수정</button>
+			<button id="delete3">삭제</button>
+		</div>
+			
+	</div>
+	
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script th:inline="javascript">
+	
+	//수정 버튼 클릭시
+	$('#updateBoard').on("click", (function() {
+		const link = "[[${board.idx}]]"
+		location.replace("/board/write.do?idx="+link)
+	}))
+	
+    //삭제 버튼 클릭시
+    $('#delete3').on("click", (function(){
+    	const idx = "[[${board.idx}]]"
+		console.log(idx)
+		
+		$.ajax({
+			url: "/board/delete.do",
+			type: "POST",
+			data: {idx : idx},
+		})
+		.success(function(){
+			location.replace("/board/list.do")
+		})
+    }))
+    
+    //뒤로가기 버튼 클릭시
+    $('#goBack').on("click", (function(){
+    	location.replace("/board/list.do")
+    }))
+</script>
+</body>
+</html>

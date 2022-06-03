@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<title>The page is a write page</title>
+</head>
+<body>
+	<h2>게시글 등록</h2>
+	
+	<div class="regist-min">
+		<form id="form" th:action="@{/board/register.do}" th:object="${board}" method="post" >
+			<input type="hidden" th:if="*{idx != null and idx > 0}" th:field="*{idx}" />
+			<div>
+				<label for="noticeYn">공지글 설정</label>
+				<input type="checkbox" th:field="*{noticeYn}" value="notice"/>
+			</div>
+			<div>
+				<label for="secretYn">비밀글 설정</label>
+				<input type="checkbox" th:field="*{secretYn}" value="secret"/>
+			</div>
+			<div>
+				<label for="title">제목</label>
+				<input type="text" th:field="*{title}" placeholder="제목을 입력해 주세요."/>
+			</div>
+			<div>
+				<label for="writer">이름</label>
+				<input type="text" th:field="*{writer}" placeholder="이름을 입력해 주세요."/>
+			</div>
+			<div>
+				<label for="pswd">비밀번호</label>
+				<input type="password" th:field="*{pswd}" placeholder="비밀번호를 입력해 주세요"/>
+			</div>
+			<div class="form-group">
+				<label for="content">내용</label>
+				<div>
+					<textarea th:field="*{content}" placeholder="내용을 입력해 주세요."></textarea>
+				</div>
+			</div>
+		</form>
+		<div>
+			<button id="goBackList" th:if="${board.idx} == null">뒤로가기</button>
+			<button id="goBackDetail" th:unless="${board.idx} == null">뒤로가기</button>
+			<button id="saveBtn">저장</button>
+			<button id="confirmCkb">확인</button>
+		</div>
+	</div>
+	
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script th:inline="javascript">
+	
+	
+	//뒤로가기 버튼 클릭시 (리스트로)
+    $('#goBackList').on("click", (function(){
+    	location.replace("/board/list.do")
+    }))
+    
+    //뒤로가기 버튼 클릭시 (상세로)
+    $('#goBackDetail').on("click", (function(){
+    	const idx = "[[${board.idx}]]"
+    	location.replace("/board/detail.do?idx="+idx)
+    }))
+
+    
+    //저장 버튼 클릭시
+    $('#saveBtn').on("click", (function(){ 
+  
+    	let pswdVal = $('#pswd').val()
+    	
+    	if(pswdVal == ''){
+    		pswdVal = 0
+    	}
+    	confirm('저장하시겠습니까?') ? $('#form').submit() : alert('취소하였습니다.')
+    }))
+	
+    //공지글 설정 체크박스 값
+    $('#noticeYn1').on("click", (function(e){
+   
+    	noticeChk = e.target.checked ? e.target.value : 'false'
+    			
+    }))
+    
+    //비밀글 설정 체크박스 값
+    $('#secretYn1').on("click", (function(e){
+   
+    	secretChk = e.target.checked ? e.target.value : 'false'
+    			
+    }))
+    
+    //확인버튼
+    $('#confirmCkb').on("click", (function(){
+    	
+    	
+    	console.log(noticeChk)
+    	console.log(secretChk)
+    }))
+</script>
+</html>
