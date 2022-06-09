@@ -16,8 +16,6 @@ public interface BoardService {
 	
 	public Map<String, Object> deleteBoard(BoardDTO boardDTO);
 	
-	public int getTotal();
-	
 	public BoardDTO setReWrite(BoardDTO boardDTO);
 
 }

@@ -129,11 +129,6 @@ public class BoardServiceImpl implements BoardService {
 		return rtnVal;
 	}
 	
-	@Override
-	public int getTotal() {
-		return boardMapper.selectBoardTotalCount();
-	}
-	
 	// 조회수 증가
 	@Transactional
 	private int getViewCnt(Long idx) {

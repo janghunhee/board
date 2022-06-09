@@ -27,8 +27,7 @@ public class BoardController {
 	
 	/* 리스트로 */
 	@GetMapping("/board/goList")
-	public String goList(Model model) {
-		model.addAttribute("Total", boardService.getTotal());
+	public String goList() {
 		
 		return "/board/list";
 	}
