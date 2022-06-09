@@ -18,9 +18,6 @@
 	})
 	$('#goList').trigger('click')
 	
-	/* $(document).ready(() => {
-		location.assign('/board/goList')
-	}) */
 	/*
 	$( "#foo" ).on( "click", function() {
 	  alert( $( this ).text() );
