@@ -243,7 +243,6 @@ a {
 				checkedIdx.push(val.dataset.idx)
 			}
 		}
-		console.log(Array.isArray(checkedIdx))
 		
 		if(window.confirm('삭제하시겠습니까?')){
 			const $ajax = boardFunc.makeAjax('delete.do', 'PUT', { idxList: checkedIdx }, 'json')

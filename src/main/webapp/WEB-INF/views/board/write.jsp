@@ -86,53 +86,44 @@
 		$noticeYn.prop('checked', $noticeYn.val() === 'true' ? true : false)
 		$secretYn.prop('checked', $secretYn.val() === 'true' ? $pswd.prop('disabled', false) : false)
 		
-		// 체크박스 기본적인 로직
-		if($noticeYn.val() == '' && $secretYn.val() == ''){
-			$secretYn.val(false)
-			$noticeYn.val(false)
-		}
-		
-		if($noticeYn.val() == 'true'){
+		if($noticeYn.is(':checked')){
 			$secretYn.val(false) 
 			$secretYn.prop('disabled', true)
 		}
+		
+		$noticeYn.on('change', (e) => {
+			const $this = $(e.currentTarget)
+			
+			if($this.is(':checked')) {
+				$this.val(true)
+				$secretYn.prop('checked', false)
+				$secretYn.prop('disabled', true)
+				$secretYn.trigger('change')
+			} else {
+				$this.val(false)
+				$secretYn.prop('disabled', false)
+				$secretYn.trigger('change')
+			}
+		})
+		
+		$secretYn.on('change', (e) => {
+			const $this = $(e.currentTarget)
+			
+			if($this.is(':checked')) {
+				$this.val(true)
+				$pswd.prop('disabled', false)
+			} else {
+				$this.val(false)
+				$pswd.prop('disabled', true) 
+				$pswd.val('')
+			}
+		})
+		
 		
 		// 답글일때
 		if($('#parentIdx').val() != '' && $('#parentIdx').val() != 0){
 			//공지 변경 x 부모의 공지를 따른다.
 			$noticeYn.prop('disabled', true)
-		}
-	})
-
-	const checkVal = (e) => {
-		const $this = $(e.currentTarget)
-		const val = $this.val() === 'false' ? 'true' : 'false' 
-		$this.val(val)
-	}
-	
-	/* 체크박스 value 설정 */
-	$noticeYn.change((e) => {
-		checkVal(e)
-		
-		if($noticeYn.val() === 'true') {
-			$secretYn.prop('disabled', true)
-			$secretYn.prop('checked', false)
-			$secretYn.val('false')
-			$pswd.prop('disabled', true)
-			$pswd.val('')
-		} else {
-			$secretYn.prop('disabled', false)
-		}
-	})
-	
-	$secretYn.change((e) => {
-		checkVal(e)
-		
-		if($secretYn.val() === 'true') {
-			$pswd.prop('disabled', false)
-		} else {
-			$pswd.prop('disabled', true) 
-			$pswd.val('')
 		}
 	})
 	
