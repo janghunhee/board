@@ -60,7 +60,7 @@
 			</div>
 		</form>
 	</div>
-	<div class="submit">
+	<div>
 		<button id="submit">
 			<c:choose>
 				<c:when test="${ empty board.idx }">

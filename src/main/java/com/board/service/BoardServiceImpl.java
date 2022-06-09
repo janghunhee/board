@@ -57,6 +57,7 @@ public class BoardServiceImpl implements BoardService {
 			this.getViewCnt(boardDTO.getIdx());
 			rtnVal.put("Data", list);	
 		} 
+		
 		return rtnVal;
 	}
 	
@@ -67,23 +68,19 @@ public class BoardServiceImpl implements BoardService {
 		int resultCnt = 0;
 		
 		// 새글등록 - idx null, parentIdx null
-		// 글 수정 - idx , parentIdx null
-		// 댓글 등록 - idx null, parentIdx
-		
-		// 새글등록
 		if(boardDTO.getIdx() == null && boardDTO.getParentIdx() == null) {
 			boardDTO.setIdx(boardDTO.getIdx() == null ? boardMapper.getLastIdx() : boardDTO.getIdx());
 			this.setReorder(boardDTO);
 			resultCnt = boardMapper.insertBoard(boardDTO);
 		}
 		
-		// 글 수정
+		// 글 수정 - idx , parentIdx null
 		if(boardDTO.getIdx() != null && boardDTO.getParentIdx() != null) {
 			this.updateBoard(boardDTO);
 			resultCnt = boardMapper.updateBoard(boardDTO);
 		}
 		
-		// 답글 등록
+		// 답글 등록 - idx null, parentIdx
 		if(boardDTO.getIdx() == null && boardDTO.getParentIdx() != null) {
 			boardDTO.setIdx(boardDTO.getIdx() == null ? boardMapper.getLastIdx() : boardDTO.getIdx());
 			this.setReorder(boardDTO);
@@ -104,11 +101,13 @@ public class BoardServiceImpl implements BoardService {
 			}
 		}
 	}
+	
 	// 답글 페이지 이동시 기본값 세팅
 	@Override
 	public BoardDTO setReWrite(BoardDTO boardDTO) {
 		//parent_idx를 가지고 부모글이 공지글인지 확인
 		boardDTO.setNoticeYn(boardMapper.selectBoardDetail((long) boardDTO.getParentIdx()).isNoticeYn());
+		
 		return boardDTO;
 	}
 	
