@@ -55,14 +55,8 @@ public class BoardDTO {
 	/** 번호 리스트 */
 	private List<Long> idxList;
 	
-	/** 그룹번호 */
-	private Integer groupNo;
-	
 	/** 그룹정렬번호 */
 	private Integer depth;
-	
-	/** 페이지당 행 수 */
-	private Integer rowNum;
 	
 	private Integer parentIdx;
 	

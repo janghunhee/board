@@ -10,6 +10,8 @@ import com.board.domain.Paging;
 @Mapper
 public interface BoardMapper {
 
+	public List<BoardDTO> selectBoardList(Paging paging);
+	
 	public int insertBoard(BoardDTO params);
 	
 	public BoardDTO selectBoardDetail(Long idx);
@@ -17,8 +19,6 @@ public interface BoardMapper {
 	public int updateBoard(BoardDTO params);
 	
 	public int deleteBoard(Long idx);
-	
-	public List<BoardDTO> selectBoardList(Paging paging);
 	
 	public int selectBoardTotalCount();
 	
@@ -28,7 +28,9 @@ public interface BoardMapper {
 	
 	public String getPswd(BoardDTO boardDTO);
 	
-	public Integer getLastGroupNo();
+	public Integer getReorder(Integer parentidx);
 	
-	public Integer getLastDepth(BoardDTO boardDTO);
+	public List<BoardDTO> selectChildIdx(Long idx);
+	
+	public void updateChild(BoardDTO boardDTO);
 }

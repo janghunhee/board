@@ -30,7 +30,7 @@
 		<form id="form" action="/board/register.do" method="POST">
 			<div>
 				<input type="hidden" name="idx" value='<c:out value="${ board.idx }" />' />
-				<input type="hidden" name="parentIdx" value='<c:out value="${ board.parentIdx }" />' />
+				<input type="hidden" id="parentIdx" name="parentIdx" value='<c:out value="${ board.parentIdx }" />' />
 			</div>
 			<div>
 				<label for="noticeYn">공지글 설정</label> 
@@ -82,10 +82,26 @@
 
 	/* 수정으로 들어왔을 때 기본값 세팅 */
 	$(document).ready(function() {
+		// 수정으로 들어왔을때 체크박스 기본값
 		$noticeYn.prop('checked', $noticeYn.val() === 'true' ? true : false)
 		$secretYn.prop('checked', $secretYn.val() === 'true' ? $pswd.prop('disabled', false) : false)
-		let groupNo = new URLSearchParams(location.search).get("groupNo")
-		console.log(groupNo)
+		
+		// 체크박스 기본적인 로직
+		if($noticeYn.val() == '' && $secretYn.val() == ''){
+			$secretYn.val(false)
+			$noticeYn.val(false)
+		}
+		
+		if($noticeYn.val() == 'true'){
+			$secretYn.val(false) 
+			$secretYn.prop('disabled', true)
+		}
+		
+		// 답글일때
+		if($('#parentIdx').val() != '' && $('#parentIdx').val() != 0){
+			//공지 변경 x 부모의 공지를 따른다.
+			$noticeYn.prop('disabled', true)
+		}
 	})
 
 	const checkVal = (e) => {
@@ -97,24 +113,31 @@
 	/* 체크박스 value 설정 */
 	$noticeYn.change((e) => {
 		checkVal(e)
+		
+		if($noticeYn.val() === 'true') {
+			$secretYn.prop('disabled', true)
+			$secretYn.prop('checked', false)
+			$secretYn.val('false')
+			$pswd.prop('disabled', true)
+			$pswd.val('')
+		} else {
+			$secretYn.prop('disabled', false)
+		}
 	})
 	
 	$secretYn.change((e) => {
 		checkVal(e)
-		$(e.currentTarget).val() === 'true' ? $pswd.prop('disabled', false) : $pswd.prop('disabled', true) && $pswd.val('')
-				console.log($pswd.val())
+		
+		if($secretYn.val() === 'true') {
+			$pswd.prop('disabled', false)
+		} else {
+			$pswd.prop('disabled', true) 
+			$pswd.val('')
+		}
 	})
 	
 	/* 등록/수정 버튼 클릭시 */
 	$('#submit').on('click', (e) => {
-		let groupNo = new URLSearchParams(location.search).get("groupNo")
-		
-		const groupHidden = $('<input>',{
-			'type': 'hidden',
-			'name': 'groupNo',
-			'value': groupNo
-		})
-		$('#form').append(groupHidden)
 		
 		  $('#title').val() === '' ? alert('제목을 입력해주세요')
 		: $('#writer').val() === '' ? alert('이름을 입력해주세요')

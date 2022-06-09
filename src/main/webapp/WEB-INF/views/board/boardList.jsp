@@ -10,7 +10,7 @@
 </head>
 <body>
 	<span>
-	 	총 <c:out value="${ boardList.Total }" />개
+		 총 <c:out value="${ boardList.Total }" />개
 	</span>
 	<table>
 		<colgroup>
@@ -45,44 +45,48 @@
 					</td>
 					<td class="title">
 						<c:choose>
-							<c:when test="${ board.noticeYn eq true }">
-								<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-group-no='<c:out value="${ board.groupNo }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
-									#공지# <c:out value="${ board.title }" />
-								</a>
-							</c:when>
-							<c:when test="${ board.secretYn eq 'N' }">
+							<c:when test = "${ board.depth == 1 }">
+								<!-- 원글 -->
 								<c:choose>
-									<c:when test="${ board.depth >= 2 }">
-										<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-group-no='<c:out value="${ board.groupNo }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
-										 	<!-- &nbsp; &nbsp; ㄴ  -->
-										 	<c:forEach var="i" begin="1" end="${ board.depth }">
-										 		&nbsp; 
-										 	</c:forEach>
-										 	ㄴ <c:out value="${ board.title }" />
-										 	
-										 </a>
+									<c:when test="${ board.noticeYn eq true }">
+										<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
+											#공지# <c:out value="${ board.title }" />
+										</a>
 									</c:when>
 									<c:otherwise>
-										<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-group-no='<c:out value="${ board.groupNo }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
-										 	<c:out value="${ board.title }" />
-										 </a>
+										<c:choose>
+											<c:when test = "${ board.secretYn eq true }">
+												<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
+													비밀글 
+												</a>
+											</c:when>
+											<c:otherwise>
+												<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
+												 	<c:out value="${ board.title }" />
+												 </a>
+											</c:otherwise>
+										</c:choose>
 									</c:otherwise>
 								</c:choose>
 							</c:when>
 							<c:otherwise>
+								<!-- 답글 -->
 								<c:choose>
-									<c:when test="${ board.depth eq 2 }">
-										<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-group-no='<c:out value="${ board.groupNo }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
+									<c:when test="${ board.secretYn eq true }">
+										<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
 											<c:forEach var="i" begin="1" end="${ board.depth }">
 										 		&nbsp; 
 										 	</c:forEach>
-											 ㄴ 비밀글 
+											 ㄴRE: 비밀글 
 										</a>
 									</c:when>
 									<c:otherwise>
-										<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-group-no='<c:out value="${ board.groupNo }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
-											비밀글 
-										</a>
+										<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
+										 	<c:forEach var="i" begin="1" end="${ board.depth }">
+										 		&nbsp; 
+										 	</c:forEach>
+										 	ㄴRE: <c:out value="${ board.title }" />
+										 </a>
 									</c:otherwise>
 								</c:choose>
 							</c:otherwise>

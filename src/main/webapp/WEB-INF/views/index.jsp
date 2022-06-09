@@ -8,13 +8,19 @@
 <title>Insert title here</title>
 </head>
 <body>
-	
+	<a id="goList">리스트가기</a>
 </body>
 <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <script type="text/javascript">
-	$(document).ready(() => {
+	
+	$('#goList').on('click', () => {
 		location.assign('/board/goList')
 	})
+	$('#goList').trigger('click')
+	
+	/* $(document).ready(() => {
+		location.assign('/board/goList')
+	}) */
 	/*
 	$( "#foo" ).on( "click", function() {
 	  alert( $( this ).text() );

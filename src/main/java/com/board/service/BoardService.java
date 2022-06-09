@@ -7,23 +7,17 @@ import com.board.domain.BoardDTO;
 
 public interface BoardService {
 	
-//	public List<BoardDTO> getBoardList();
 	
 	public Map<String, Object> getBoardList(BoardDTO boardDTO);
 	
-	public boolean registerBoard(BoardDTO boardDTO);
+	public Map<String, Object> getBoardDetailChk(BoardDTO boardDTO);
 	
-	public Map<String, Object> getBoardDetail(Long idx);
+	public boolean registerBoard(BoardDTO boardDTO);
 	
 	public Map<String, Object> deleteBoard(BoardDTO boardDTO);
 	
-	public int getViewCnt(Long idx);
+	public int getTotal();
 	
-	public Map<String, Object> pswdCheck(BoardDTO boardDTO);
-	
-	public Map<String, Object> getBoardDetailChk(BoardDTO boardDTO);
-	
-	public BoardDTO setGroupNo(BoardDTO boardDTO);
-	
-	public BoardDTO setDepth(BoardDTO boardDTO);
+	public BoardDTO setReWrite(BoardDTO boardDTO);
+
 }

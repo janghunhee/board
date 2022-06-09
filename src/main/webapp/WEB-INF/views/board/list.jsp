@@ -31,32 +31,6 @@ a {
 		<h2>게시판</h2>
 	</div>
 	<div id = tableBody>
-		<span>
-		 	총 <c:out value="${ boardList.Total }" />개
-		</span>
-		<table>
-			<colgroup>
-				<col width="30px" />
-				<col width="100px" />
-				<col width="250px" />
-				<col width="150px" />
-				<col width="150px" />
-				<col width="150px" />
-				<col width="150px" />
-			</colgroup>
-			<thead>
-				<tr>
-					<th><input type="checkbox" id="allCheck"></th>
-					<th>번호</th>
-					<th>제목</th>
-					<th>작성자</th>
-					<th>등록일</th>
-					<th>등록 시간</th>
-					<th>조회수</th>
-				</tr>
-			</thead>
-		</table>
-		
 	</div>
 
 	<div class="btn-area" style="margin-top: 30px">
@@ -90,106 +64,139 @@ a {
 <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <script type="text/javascript">
 			
-	/* 중복으로 쓰이는 selector */
+	// 중복으로 쓰이는 selector 
 	const $boardDetail = $('#boardDetail')
 	const $detailBtn = $('#detailBtn')
 	const $detailHeader = $('#detailHeader')
+	const $tableBody = $('#tableBody')
 	
-	/* 페이징 임시 */
+	// 모듈화 ? 
+	const boardFunc = (function() {
+		
+		const makeAjax = function(urlP, typeP, dataP, dataTypeP) {
+			const ajax = $.ajax({
+							url: '/board/'+urlP,
+							type: typeP,
+							data: dataP,
+							dataType: dataTypeP,
+						})
+			return ajax
+		}
+		
+		const getDetailPswdChk = function(idxP, pswdP, secretYnP) {
+			
+			
+			return new Promise((resolve, reject) => {
+				$.ajax({
+					url: '/board/listChk',
+					type: 'GET',
+					data: {
+						idx: idxP,
+						pswd: pswdP,
+						secretYn: secretYnP
+					},
+					dataType: 'json',
+					success: function(data, textStatus, jqXHR) {
+						resolve(data)
+					},
+					error: function(jqXHR, textStatus, errorThrown){
+						reject(errorThrown)
+					}
+				})
+			})
+		}
+		
+		const setBoardDetail = function(param) {
+			const noticeChk = param.Data.noticeYn ? '#공지#' : ''
+			
+			$detailHeader.text('게시글 상세')
+			$('#noticeDetail').text(noticeChk)
+			$('#titleDetail').text(param.Data.title)
+			$('#writerDetail').text(param.Data.writer)
+			$('#contentDetail').text(param.Data.content)
+			$('#viewCntDetail').text(param.Data.viewCnt)
+			
+			$boardDetail.show()
+		}
+		
+		const appendBtn = function(upBtn, reBtn) {
+			$detailBtn.empty()
+			$detailBtn.append(upBtn)
+			$detailBtn.append(reBtn)
+		}
+		
+		const makeHidden = function(name, value) {
+			const hidden =  $('<input>',{
+								'type': 'hidden',
+								'name': name,
+								'value': value
+							})
+			return hidden
+		}
+		
+		const makeBtn = function(text, id) {
+			const btn = $('<button>',{
+							'text': text,
+							'id': id,
+						})
+						
+			return btn
+		}
+		
+		const makeForm = function(url) {
+			const form = $('<form>',{
+				'method': 'POST',
+				'action': '/board/'+url
+			}) 
+			
+			return form
+		}
+		
+		return {
+			getDetailPswdChk,
+			setBoardDetail,
+			appendBtn,
+			makeHidden,
+			makeBtn,
+			makeForm,
+			makeAjax
+		}
+	})()
+	
+	// 처음 들어왔을때 pageNum=1 
 	$(document).ready(() => {
-		
-		$.ajax({
-			url: '/board/list.do',
-			type: 'POST',
-			data: {
-				pageNum : '1'
-			},
-			dataType: 'html',
+		const $ajax = boardFunc.makeAjax('list.do', 'POST', { pageNum : '1' }, 'html')
+		$ajax.done(function(result) {
+			$tableBody.html(result)
 		})
-		.done(function(result) {
-			$('#tableBody').html(result);
-		})
-		
-		/* 체크박스 */
-		
 	})
 	
+	// paging 숫자 클릭시 Event
 	$(document).on('click','a.pagingTag', (e) => {
 		e.preventDefault()
-		const num = $(e.currentTarget).data('num')
-		console.log(num)
-		$.ajax({
-			url: '/board/list.do',
-			type: 'POST',
-			data: {
-				pageNum : num
-			},
-			dataType: 'html'
-		})
-		.done(function(result) {
-			$('#tableBody').html(result);
+
+		const $ajax = boardFunc.makeAjax('list.do','POST',{ pageNum: $(e.currentTarget).data('num') },'html')
+		$ajax.done(function(result){
+			$tableBody.html(result)
 		})
 	})
 	
-	/* 두개합쳐본 ajax 함수 */
-	const getDetailPswdChk = (idxP, pswdP, secretYnP) => {
-		return new Promise((resolve, reject) => {
-			$.ajax({
-				url: '/board/listChk',
-				type: 'GET',
-				data: {
-					idx: idxP,
-					pswd: pswdP,
-					secretYn: secretYnP
-				},
-				dataType: 'json',
-				success: function(data, textStatus, jqXHR) {
-					resolve(data)
-				},
-				error: function(jqXHR, textStatus, errorThrown){
-					reject(errorThrown)
-				}
-			})
-		})
-	}
-	
-	/* 데이터 셋팅 */
-	const setBoardDetail = function(param) {
-		const noticeYn = param.noticeYn ? '#공지#' : ''
-		
-		$detailHeader.text('게시글 상세')
-		$('#noticeDetail').text(noticeYn)
-		$('#titleDetail').text(param.Data.title)
-		$('#writerDetail').text(param.Data.writer)
-		$('#contentDetail').text(param.Data.content)
-		$('#viewCntDetail').text(param.Data.viewCnt)
-	}
-	
-	/* 제목 클릭시 event */
+	// 제목 클릭시 event 
 	$(document).on('click','a.boardTitle', (e) => {
 		e.preventDefault()
 		const $this = $(e.currentTarget)
 		const idx = $this.data('idx')
-		const groupNo = $this.data('group-no')
 		const secretYn = $this.data('secret-yn')
 		
-		const upBtn = $('<button>',{
-			'text': '수정',
-			'id': 'goUpdate',
-			'data-idx': idx
-		})
-		
-		const reBtn = $('<button>',{
-			'text': '답글',
-			'id': 'replyWrite',
-			'data-group-no': groupNo,
-			'data-notice-yn': $this.data('notice-yn'),
-			'data-pidx' : $this.data('idx') 
-		})
-		
+		const upBtn = boardFunc.makeBtn('수정', 'goUpdate')
+		upBtn.attr('data-idx', idx)
+
+		const reBtn = boardFunc.makeBtn('답글', 'replyWrite')
+		reBtn.attr('data-parent-idx', idx)
+
 		if(secretYn) {
 			const pswdChk = prompt('비밀번호를 입력하세요')
-			getDetailPswdChk(idx, pswdChk, secretYn)
+			boardFunc.getDetailPswdChk(idx, pswdChk, secretYn)
 			.then((board) => {
 				if(!board.Data){
 					$detailHeader.text('비밀글 입니다')
@@ -197,110 +204,66 @@ a {
 					alert('비밀번호를 확인해주세요')
 					
 				} else {
-					setBoardDetail(board)
-					$boardDetail.show()
-					$detailBtn.empty()
-					$detailBtn.append(upBtn)
-					$detailBtn.append(reBtn)
+					boardFunc.setBoardDetail(board)
+					boardFunc.appendBtn(upBtn, reBtn)
 				}
 			})
 		} else {
-			getDetailPswdChk(idx)
+			boardFunc.getDetailPswdChk(idx)
 			.then((board) => {
-				setBoardDetail(board)
-				$boardDetail.show()
+				boardFunc.setBoardDetail(board)
 			})
-			$detailBtn.empty()
-			$detailBtn.append(upBtn)
-			$detailBtn.append(reBtn)
+			boardFunc.appendBtn(upBtn, reBtn)
 		}
 	})
 	
-	/* 글쓰기 버튼 클릭시 event */
+	// 글쓰기 버튼 클릭시 event 
 	$('#doWrite').on('click', () => {
-		location.assign('/board/write.do')
+		location.assign('/board/goWrite')
 	})
 	
-	/* 수정 버튼 클릭시 event */
+	// 수정 버튼 클릭시 event 
 	$(document).on('click', '#goUpdate',(e) => {
-		/* location.assign('/board/write.do?idx='+$(e.currentTarget).data('idx')) */
-		/* get방식 idx(key값) 노출이유로 post방식으로 변경 */
-		const form = $('<form>',{
-			'method': 'POST',
-			'action': '/board/reWrite'
-		})
-		
-		const idx = $('<input>',{
-			'type': 'hidden',
-			'name': 'idx',
-			'value': $(e.currentTarget).data('idx'),
-		})
+
+		const form = boardFunc.makeForm('goUpdate')
+		const idx = boardFunc.makeHidden('idx', $(e.currentTarget).data('idx'))
 		
 		form.append(idx)
 		form.appendTo('body')
 		form.submit()
 	}) 
 	
-	/* 삭제버튼 클릭시 */
+	// 삭제버튼 클릭시 
 	$('#doDelete').on('click', () => {
 		const rowCheck = $('input[name=rowCheck]')
 		const checkedIdx = []
 		
 		for ( const val of rowCheck ) {
-			/* console.log(val.dataset.idx) */
 			if(val.checked) {
 				checkedIdx.push(val.dataset.idx)
 			}
 		}
-		console.log(checkedIdx)
+		console.log(Array.isArray(checkedIdx))
+		
 		if(window.confirm('삭제하시겠습니까?')){
-			$.ajax({
-				url: '/board/delete.do',
-				type: 'PUT',
-				data: {
-					idxList: checkedIdx
-				},
-				dataType: 'json'
-			})
-			.success((msg) => {
+			const $ajax = boardFunc.makeAjax('delete.do', 'PUT', { idxList: checkedIdx }, 'json')
+			$ajax.success(function(msg) {
 				alert(msg.Data)
 				location.reload()
 			})
 		} else {
 			alert('삭제가 취소되었습니다.')
 		}
-		
 	})
 	
-	/* 답글버튼 클릭시 */
+	// 답글버튼 클릭시 
 	$(document).on('click', '#replyWrite', (e) => {
-		/* location.assign('/board/write.do?groupNo='+$(e.currentTarget).data('group-no')+'&noticeYn='+$(e.currentTarget).data('notice-yn')) */
-		const $this = $(e.currentTarget)
-		
-		const form = $('<form>',{
-			'method': 'POST',
-			'action': '/board/reWrite'
-		})
-		/* 보내줘야할 parameter = idx(p_idx로 사용). groupNo, noticeYn */
-		const pIdx = $('<input>',{
-			'type': 'hidden',
-			'name': 'parentIdx',
-			'value': $this.data('pidx'),
-		})
-		const groupNo = $('<input>',{
-			'type': 'hidden',
-			'name': 'groupNo',
-			'value': $this.data('groupNo')
-		})
-		const noticeYn = $('<input>',{
-			'type': 'hidden',
-			'name': 'noticeYn',
-			'value': $this.data('notice-yn')
-		})
+
+		const form = boardFunc.makeForm('goReWrite')
+		// 보내줘야할 parameter = idx(parentIdx로 사용), noticeYn 
+		const pIdx = boardFunc.makeHidden('parentIdx', $(e.currentTarget).data('parent-idx'))
 		
 		form.append(pIdx)
-		form.append(groupNo)
-		form.append(noticeYn)
 		form.appendTo('body')
 		form.submit()
 	})

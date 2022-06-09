@@ -1,7 +1,5 @@
 package com.board.service;
 
-import java.util.ArrayList;
-//import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,122 +21,98 @@ public class BoardServiceImpl implements BoardService {
 	/** 행당 갯수 */
 	private static final Integer rowNum = 10;
 	
+	// 전체 조회
 	@Override
 	public Map<String,Object> getBoardList(BoardDTO boardDTO) {
 		
 		Map<String,Object> rtnVal = new HashMap<>(); 
-		Paging paging = new Paging();
 		
-		int pageNum = boardDTO.getPageNum() != null && boardDTO.getPageNum() != 0 ? boardDTO.getPageNum() : 1;
+		Integer getPageNum = boardDTO.getPageNum();
+		int pageNum = getPageNum != null && getPageNum != 0 ? getPageNum : 1;
 		
-		paging.setPageNum(pageNum);
-		this.setPaging(paging);
+		Paging paging = this.setPaging(pageNum);
 		
 		List<BoardDTO> lists = boardMapper.selectBoardList(paging);
 		
-//		List<BoardDTO> list = new ArrayList<>();
-		
-//		for (BoardDTO listItem : lists) {
-//			if(listItem.isNoticeYn()) {
-//				listItem.setTitle("#공지# "+listItem.getTitle());
-//			}
-//			list.add(listItem);
-//		};
-		
-		List<BoardDTO> realList = new ArrayList<>();
-		
-		
-		for(int i=0; i<lists.size(); i++) { // 전체순회
-			// depth1 
-			long idx=0;
-			if(lists.get(i).getDepth()==1 && lists.get(i).getParentIdx() == 0) {
-				idx = lists.get(i).getIdx();
-				realList.add(lists.get(i));
-			}
-			for(int j=0; j<lists.size(); j++) {
-				// depth2 
-				long idx1=0;
-				if(lists.get(j).getDepth()==2 && idx == lists.get(j).getParentIdx()) {
-					idx1 = lists.get(j).getIdx();
-					realList.add(lists.get(j));
-				}
-				for(int x=0; x<lists.size(); x++) {
-					// depth3
-					if(lists.get(x).getDepth() == 3 && idx1 == lists.get(x).getParentIdx() ) {
-						realList.add(lists.get(x));
-					}
-				}
-			}
-		}
-		
 		rtnVal.put("Total", paging.getTotal());
-		rtnVal.put("Data", realList);
+		rtnVal.put("Data", lists);
 		rtnVal.put("pageLength", paging.getPageLength());
-		
 		
 		return rtnVal;
 	}
 	
-	private Paging setPaging(Paging paging) {
+	// 상세조회
+	@Override
+	public Map<String, Object> getBoardDetailChk(BoardDTO boardDTO){
+		Map<String, Object> rtnVal = new HashMap<String, Object>();
+		BoardDTO list = boardMapper.selectBoardDetail(boardDTO.getIdx());
+		boolean pswdChk = true;
+			
+		if(list.isSecretYn()) {
+			String selPswd = boardMapper.getPswd(boardDTO);
+			pswdChk = selPswd.equals(boardDTO.getPswd());
+		} 
 		
-		int pageNum = paging.getPageNum();
-		int total = boardMapper.selectBoardTotalCount();
-		
-		paging.setTotal(total);
-		paging.setPageLength((total-1)/rowNum + 1);
-		paging.setStart((pageNum-1) * rowNum);
-		paging.setRowNum(rowNum);
-//		paging.setNum((pageNum-1) * 5 + 1); 
-//		paging.setNum(total - ((pageNum-1)*rowNum));
-		
-		return paging;
+		if(pswdChk) {
+			this.getViewCnt(boardDTO.getIdx());
+			rtnVal.put("Data", list);	
+		} 
+		return rtnVal;
 	}
 	
+	// 등록,수정,댓글등록
 	@Override
+	@Transactional
 	public boolean registerBoard(BoardDTO boardDTO) {
 		int resultCnt = 0;
-		this.setGroupNo(boardDTO);
-		this.setDepth(boardDTO);
 		
-		if(boardDTO.getIdx() == null) {
-			boardDTO.setIdx(boardMapper.getLastIdx()+1);
+		// 새글등록 - idx null, parentIdx null
+		// 글 수정 - idx , parentIdx null
+		// 댓글 등록 - idx null, parentIdx
+		
+		// 새글등록
+		if(boardDTO.getIdx() == null && boardDTO.getParentIdx() == null) {
+			boardDTO.setIdx(boardDTO.getIdx() == null ? boardMapper.getLastIdx() : boardDTO.getIdx());
+			this.setReorder(boardDTO);
 			resultCnt = boardMapper.insertBoard(boardDTO);
 		}
-		else {
-			
+		
+		// 글 수정
+		if(boardDTO.getIdx() != null && boardDTO.getParentIdx() != null) {
+			this.updateBoard(boardDTO);
 			resultCnt = boardMapper.updateBoard(boardDTO);
+		}
+		
+		// 답글 등록
+		if(boardDTO.getIdx() == null && boardDTO.getParentIdx() != null) {
+			boardDTO.setIdx(boardDTO.getIdx() == null ? boardMapper.getLastIdx() : boardDTO.getIdx());
+			this.setReorder(boardDTO);
+			resultCnt = boardMapper.insertBoard(boardDTO);
 		}
 		
 		return resultCnt == 0 ? false : true;
 	}
 	
-	/** 계층형으로 인한 추가 */
-	/** 댓글등록 임시 */
-	
-	
-	/** 그룹번호(group_no) 세팅 */
+	// 자식 글 공지 수정
+	@Transactional
+	private void updateBoard(BoardDTO boardDTO) {
+		if(boardDTO.isNoticeYn() != boardMapper.selectBoardDetail(boardDTO.getIdx()).isNoticeYn()) {
+			List<BoardDTO> list = boardMapper.selectChildIdx(boardDTO.getIdx());
+			for(BoardDTO item : list) {
+				item.setNoticeYn(boardDTO.isNoticeYn());
+				boardMapper.updateBoard(item);
+			}
+		}
+	}
+	// 답글 페이지 이동시 기본값 세팅
 	@Override
-	public BoardDTO setGroupNo(BoardDTO boardDTO) {
-	
-		Integer getGroupNo = boardDTO.getGroupNo();
-		Integer groupNo = getGroupNo == null ? boardMapper.getLastGroupNo()+1 : getGroupNo;
-		boardDTO.setGroupNo(groupNo);
-		
+	public BoardDTO setReWrite(BoardDTO boardDTO) {
+		//parent_idx를 가지고 부모글이 공지글인지 확인
+		boardDTO.setNoticeYn(boardMapper.selectBoardDetail((long) boardDTO.getParentIdx()).isNoticeYn());
 		return boardDTO;
 	}
 	
-	/** 그룹내 정렬번호(depth) 세팅 */
-	@Override
-	public BoardDTO setDepth(BoardDTO boardDTO) {
-		
-		boardDTO.setDepth(boardMapper.getLastDepth(boardDTO)+1);
-		
-		return boardDTO;
-	}
-	
-	
-	/** =========================================================== */
-
+	// 삭제
 	@Override
 	@Transactional
 	public Map<String, Object> deleteBoard(BoardDTO boardDTO) {
@@ -156,60 +130,48 @@ public class BoardServiceImpl implements BoardService {
 	}
 	
 	@Override
-	public int getViewCnt(Long idx) {
+	public int getTotal() {
+		return boardMapper.selectBoardTotalCount();
+	}
+	
+	// 조회수 증가
+	@Transactional
+	private int getViewCnt(Long idx) {
 		
 		int resultCnt = boardMapper.setViewCnt(idx);
 		
 		return resultCnt;
 	}
 	
-	/* ====================================================================== */
-	
-	/* getBoardDetailChk에 하나로 합침 */
-	@Deprecated
-	@Override
-	public Map<String, Object> getBoardDetail(Long idx) {
+	// reorder 셋팅
+	private BoardDTO setReorder(BoardDTO boardDTO) {
+		//parent_idx가 없을땐 1, parent_idx가 있다면?
+		Integer pIdx = boardDTO.getParentIdx();
 		
-		//TODO 한번더 비밀글인지 체크
+		if(pIdx == null) {
+			boardDTO.setParentIdx(0);
+			boardDTO.setReorder(1);
+		} else {
+			boardDTO.setReorder(boardMapper.getReorder(pIdx));
+		}
 		
-		Map<String, Object> rtnVal = new HashMap<String, Object>();
-		
-		BoardDTO list = boardMapper.selectBoardDetail(idx);
-		rtnVal.put("Data", list);
-		
-		return rtnVal;
+		return boardDTO;
 	}
 	
-	@Deprecated
-	@Override
-	public Map<String, Object> pswdCheck(BoardDTO boardDTO) {
+	// 페이징 셋팅
+	private Paging setPaging(Integer pageNum) {
+		int total = boardMapper.selectBoardTotalCount();
 		
-		Map<String, Object> rtnVal = new HashMap<>();
-		String selPswd = boardMapper.getPswd(boardDTO);
-		boolean pswdChk = selPswd.equals(boardDTO.getPswd()) ? true : false;
-		rtnVal.put("Data", pswdChk);
+		// 빌더패턴 적용
+		Paging paging = Paging.builder()
+							  .total(total)
+							  .pageNum(pageNum)
+							  .pageLength((total-1)/rowNum + 1)
+							  .start((pageNum-1) * rowNum)
+							  .rowNum(rowNum)
+							  .build();
 		
-		return rtnVal;
-	}
-	
-	/* ====================================================================== */	
-	
-	@Override
-	public Map<String, Object> getBoardDetailChk(BoardDTO boardDTO){
-		Map<String, Object> rtnVal = new HashMap<String, Object>();
-		BoardDTO list = boardMapper.selectBoardDetail(boardDTO.getIdx());
-		boolean pswdChk = true;
-		
-		if(boardDTO.isSecretYn() && list.isSecretYn()) {
-			String selPswd = boardMapper.getPswd(boardDTO);
-			pswdChk = selPswd.equals(boardDTO.getPswd()) ? true : false;
-		} 
-		
-		if(pswdChk) {
-			this.getViewCnt(boardDTO.getIdx());
-			rtnVal.put("Data", list);	
-		} 
-		return rtnVal;
+		return paging;
 	}
 	
 }

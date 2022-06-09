@@ -2,21 +2,91 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.board.mapper.BoardMapper">
-
-	<sql id="boardColumns">
-			  idx			/** 번호(PK) */
-			, title			/** 제목 */
-			, content		/** 내용 */
-			, writer		/** 작성자 */
-			, view_cnt		/** 조회수 */
-			, notice_yn		/** 공지글 여부 */
-			, secret_yn		/** 비밀글 여부 */
-			, delete_yn		/** 삭제 여부 */
-			, insert_time	/** 등록 시간 */
-			, update_time	/** 수정 시간 */
-			, delete_time	/** 삭제 시간 */
-	</sql>
 	
+	<!-- <select id="selectBoardList"  parameterType="Paging" resultType="BoardDTO" >
+	    SELECT
+				  @ROWNUM := @ROWNUM + 1 as num
+				  row_number() OVER(ORDER BY notice_yn DESC, group_no DESC, depth DESC) as num
+				, idx			/** 번호(PK) */
+				, title			/** 제목 */
+				, content		/** 내용 */
+				, writer		/** 작성자 */
+				, view_cnt		/** 조회수 */
+				, notice_yn		/** 공지글 여부 */
+				, secret_yn		/** 비밀글 여부 */
+				, delete_yn		/** 삭제 여부 */
+				, insert_time	/** 등록 시간 */
+				, update_time	/** 수정 시간 */
+				, delete_time	/** 삭제 시간 */
+				, group_no		/** 그룹번호 */
+				, parent_idx
+		FROM
+			      tb_board
+                , (select @rownum:=0) as n
+	    WHERE
+	    	    delete_yn='N'
+	 ORDER BY
+	 			  group_no
+	 			, depth
+	    ORDER BY
+				  notice_yn ASC
+                , insert_time DESC
+        LIMIT #{rowNum} OFFSET #{start}
+			  
+	</select> -->
+
+	<select id="selectBoardList"  parameterType="Paging" resultType="BoardDTO" >
+		WITH RECURSIVE CTE AS (
+			SELECT 
+					IDX, PARENT_IDX, REORDER, TITLE, CONTENT, WRITER, VIEW_CNT, NOTICE_YN, SECRET_YN, DELETE_YN, INSERT_TIME, CONCAT(LPAD(IDX,(SELECT LENGTH(MAX(IDX)) FROM tb_board), '0')) AS PATH, 1 AS DEPTH
+		    FROM 
+		    		TB_BOARD 
+		    WHERE 
+		    		PARENT_IDX = 0
+		    
+		    UNION ALL
+		    
+		    SELECT 
+		    		T.IDX, T.PARENT_IDX, T.REORDER, T.TITLE, T.CONTENT, T.WRITER, T.VIEW_CNT, T.NOTICE_YN, T.SECRET_YN, T.DELETE_YN, T.INSERT_TIME,  CONCAT(C.PATH, '-', T.REORDER) AS PATH, C.DEPTH + 1 AS DEPTH
+		    FROM 
+		    		TB_BOARD T
+		    INNER JOIN 
+		    		CTE AS C
+		    ON 
+		    		T.PARENT_IDX = C.IDX
+		)
+		SELECT 
+				*, ROW_NUMBER() OVER(ORDER BY SUBSTRING(PATH,1,(SELECT LENGTH(MAX(IDX)) FROM tb_board)) , PATH DESC) AS NUM
+		FROM 
+				CTE
+		WHERE
+				DELETE_YN = 'N'
+		ORDER BY 
+				NOTICE_YN DESC,SUBSTRING(PATH,1,(SELECT LENGTH(MAX(IDX)) FROM tb_board)) DESC, PATH
+		LIMIT #{rowNum} OFFSET #{start}
+	</select>
+
+	<select id="selectBoardDetail" parameterType="long" resultType="BoardDTO">
+		SELECT 
+				  idx			/** 번호(PK) */
+				, parent_idx	/** 부모idx */
+				, title			/** 제목 */
+				, content		/** 내용 */
+				, writer		/** 작성자 */
+				, view_cnt		/** 조회수 */
+				, notice_yn		/** 공지글 여부 */
+				, secret_yn		/** 비밀글 여부 */
+				, delete_yn		/** 삭제 여부 */
+				, insert_time	/** 등록 시간 */
+				, update_time	/** 수정 시간 */
+				, delete_time	/** 삭제 시간 */
+		  FROM 
+		  		tb_board
+		 WHERE 
+		 		delete_yn = 'N'
+		   AND 
+		   		idx = #{idx} 
+	</select>
 
 	<insert id="insertBoard" parameterType = "BoardDTO">
 		INSERT INTO tb_board(
@@ -32,8 +102,8 @@
 			, insert_time	/** 등록 시간 */
 			, update_time	/** 수정 시간 */
 			, delete_time	/** 삭제 시간 */
-			, group_no		/** 그룹 번호 */
-			, depth			/** 그룹내 순서 */
+			, parent_idx	/** 부모번호 */
+			, reorder		/** 그룹 내 순서 */
 		) VALUES (
 			  #{idx}
 			, #{title}
@@ -47,21 +117,10 @@
 			, NOW()
 			, NULL
 			, NULL
-			, #{groupNo}
-			, #{depth}
+			, #{parentIdx}
+			, #{reorder}
 		)
 	</insert>
-	
-	<select id="selectBoardDetail" parameterType="long" resultType="BoardDTO">
-		SELECT 
-				<include refid="boardColumns" />
-		  FROM 
-		  		tb_board
-		 WHERE 
-		 		delete_yn = 'N'
-		   AND 
-		   		idx = #{idx} 
-	</select>
 	
 	<update id="updateBoard" parameterType="BoardDTO">
 		UPDATE 
@@ -87,39 +146,6 @@
 		 WHERE 
 		 		idx=#{idx}
 	</update>
-	
-	<select id="selectBoardList"  parameterType="Paging" resultType="BoardDTO" >
-	    SELECT
-				  <!-- @ROWNUM := @ROWNUM + 1 as num -->
-				  row_number() OVER(ORDER BY notice_yn DESC, group_no DESC, depth DESC) as num
-				, idx			/** 번호(PK) */
-				, title			/** 제목 */
-				, content		/** 내용 */
-				, writer		/** 작성자 */
-				, view_cnt		/** 조회수 */
-				, notice_yn		/** 공지글 여부 */
-				, secret_yn		/** 비밀글 여부 */
-				, delete_yn		/** 삭제 여부 */
-				, insert_time	/** 등록 시간 */
-				, update_time	/** 수정 시간 */
-				, delete_time	/** 삭제 시간 */
-				, group_no		/** 그룹번호 */
-				, depth			/** 답글 정렬 */
-				, parent_idx
-		FROM
-			      tb_board
-                <!-- , (select @rownum:=0) as n -->
-	    WHERE
-	    	    delete_yn='N'
-	 ORDER BY
-	 			  group_no
-	 			, depth
-	    <!-- ORDER BY
-				  notice_yn ASC
-                , insert_time DESC -->
-        LIMIT #{rowNum} OFFSET #{start}
-			  
-	</select>
 	
 	<select id="selectBoardTotalCount" resultType="int">
 		SELECT
@@ -152,27 +178,53 @@
 	
 	<select id = "getLastIdx" resultType = "Long" >
 		SELECT
-				IFNULL(MAX(idx),0) idx
+				IFNULL(MAX(idx),0) + 1 AS idx
 		  FROM
 		  		tb_board
 	</select>
 	
-	<select id="getLastGroupNo" resultType="Integer">
-		SELECT 
-				IFNULL(MAX(group_no),0) group_no
-        FROM
-				tb_board
+	<select id="getReorder" parameterType="Integer" resultType = "Integer" >
+		SELECT
+				IFNULL(MAX(reorder),0) + 1 AS reorder
+		  FROM
+		  		tb_board
+		 WHERE
+		 		parent_idx = #{parentIdx}
 	</select>
 	
-	<select id="getLastDepth" parameterType="BoardDTO" resultType="Integer">
+	<select id="selectChildIdx" parameterType="Long" resultType="BoardDTO" >
+		WITH RECURSIVE CTE AS (
+			SELECT
+					IDX
+			  FROM
+					TB_BOARD
+			 WHERE
+					IDX = #{IDX}
+		            
+			UNION ALL
+		    
+		    SELECT
+					T.IDX
+			  FROM
+					TB_BOARD T
+			  INNER JOIN 
+			  		CTE AS C
+		      ON 
+		      		T.PARENT_IDX = C.IDX
+		)
 		SELECT 
-				depth
-				<!-- IFNULL(MAX(depth),0) depth -->
-        FROM
-				tb_board
-		WHERE
-				idx = #{parentIdx}
-				<!-- group_no = #{groupNo} -->
+				IDX 
+		  FROM 
+		  		CTE;
 	</select>
+	
+	<update id="updateChild" parameterType="BoardDTO">
+		UPDATE
+				TB_BOARD
+		   SET
+		   		NOTICE_YN = #{noticeYn, typeHandler=com.board.handler.BooleanHandler}
+		 WHERE
+		 		IDX = #{idx}
+	</update>
 
 </mapper>
