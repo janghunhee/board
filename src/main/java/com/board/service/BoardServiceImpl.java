@@ -19,7 +19,7 @@ public class BoardServiceImpl implements BoardService {
 	private BoardMapper boardMapper;
 	
 	/** 행당 갯수 */
-	private static final Integer rowNum = 10;
+	private static final Integer ROWNUM = 10;
 	
 	// 전체 조회
 	@Override
@@ -27,16 +27,19 @@ public class BoardServiceImpl implements BoardService {
 		
 		Map<String,Object> rtnVal = new HashMap<>(); 
 		
-		Integer getPageNum = boardDTO.getPageNum();
-		int pageNum = getPageNum != null && getPageNum != 0 ? getPageNum : 1;
+//		Integer getPageNum = boardDTO.getPageNum();
+//		int pageNum = getPageNum != null && getPageNum != 0 ? getPageNum : 1;
+//		boardDTO.setPageNum(boardDTO.getPageNum());
+		this.setPaging(boardDTO);
+//		Paging paging = this.setPaging(pageNum);
+//		
+//		List<BoardDTO> lists = boardMapper.selectBoardList(paging);
 		
-		Paging paging = this.setPaging(pageNum);
+		List<BoardDTO> lists = boardMapper.selectBoardList(boardDTO);
 		
-		List<BoardDTO> lists = boardMapper.selectBoardList(paging);
-		
-		rtnVal.put("Total", paging.getTotal());
+		rtnVal.put("Total", boardDTO.getTotal());
 		rtnVal.put("Data", lists);
-		rtnVal.put("pageLength", paging.getPageLength());
+		rtnVal.put("pageLength", boardDTO.getPageLength());
 		
 		return rtnVal;
 	}
@@ -57,6 +60,23 @@ public class BoardServiceImpl implements BoardService {
 			this.getViewCnt(boardDTO.getIdx());
 			rtnVal.put("Data", list);	
 		} 
+		
+		return rtnVal;
+	}
+	
+	// 검색
+	@Override
+	@Deprecated
+	public Map<String, Object> getSearchList(BoardDTO boardDTO) {
+		Map<String, Object> rtnVal = new HashMap<String, Object>();
+		
+		this.setPaging(boardDTO);
+		List<BoardDTO> list = boardMapper.searchList(boardDTO);
+//		int total = boardMapper.selectBoardTotalCount(boardDTO);
+		
+		rtnVal.put("Total", boardDTO.getTotal());
+		rtnVal.put("Data", list);
+		rtnVal.put("pageLength", boardDTO.getPageLength());
 		
 		return rtnVal;
 	}
@@ -97,7 +117,7 @@ public class BoardServiceImpl implements BoardService {
 			List<BoardDTO> list = boardMapper.selectChildIdx(boardDTO.getIdx());
 			for(BoardDTO item : list) {
 				item.setNoticeYn(boardDTO.isNoticeYn());
-				boardMapper.updateBoard(item);
+				boardMapper.updateChild(item);
 			}
 		}
 	}
@@ -153,19 +173,27 @@ public class BoardServiceImpl implements BoardService {
 	}
 	
 	// 페이징 셋팅
-	private Paging setPaging(Integer pageNum) {
-		int total = boardMapper.selectBoardTotalCount();
-		
+	private Paging setPaging(BoardDTO boardDTO) {
+		int total = boardMapper.selectBoardTotalCount(boardDTO);
+		if(boardDTO.getPageNum() == null) {
+			boardDTO.setPageNum(1);
+		}
 		// 빌더패턴 적용
-		Paging paging = Paging.builder()
-							  .total(total)
-							  .pageNum(pageNum)
-							  .pageLength((total-1)/rowNum + 1)
-							  .start((pageNum-1) * rowNum)
-							  .rowNum(rowNum)
-							  .build();
+//		Paging paging = Paging.builder()
+//							  .total(total)
+//							  .pageNum(pageNum)
+//							  .pageLength((total-1)/ROWNUM + 1)
+//							  .start((pageNum-1) * ROWNUM)
+//							  .rowNum(ROWNUM)
+//							  .build();
 		
-		return paging;
+		boardDTO.setTotal(total);
+		boardDTO.setPageLength((total/ROWNUM) + 1);
+		boardDTO.setStart((boardDTO.getPageNum()-1) * ROWNUM);
+		boardDTO.setRowNum(ROWNUM);
+		
+		
+		return boardDTO;
 	}
 	
 }

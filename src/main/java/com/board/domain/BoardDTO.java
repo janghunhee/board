@@ -3,18 +3,16 @@ package com.board.domain;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-@Getter
-@Setter
-public class BoardDTO {
-	
+@Data
+@EqualsAndHashCode(callSuper = false)
+
+public class BoardDTO extends Paging{
+
 	/** 번호 */
 	private Long idx;
-	
-	/** 페이지 번호 */
-	private Integer pageNum;
 	
 	/** 번호 */
 	private Integer num;
@@ -58,7 +56,16 @@ public class BoardDTO {
 	/** 그룹정렬번호 */
 	private Integer depth;
 	
+	/** 부모 idx */
 	private Integer parentIdx;
 	
+	/** 같은레벨에서의 순서 */
 	private Integer reorder;
+	
+	/** 검색 키 */
+	private String searchKey;
+	
+	/** 검색 값 */
+	private String searchVal;
+	
 }

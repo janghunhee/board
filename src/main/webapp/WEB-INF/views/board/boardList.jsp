@@ -116,21 +116,23 @@
 <script type="text/javascript">
 	const $rowCheck = $('input[name=rowCheck]')
 	const $allCheck = $('#allCheck')
-
+	const $pageLength = '${ boardList.pageLength }'
+	
 	$(document).ready(() => {
 		
 		/* 페이지 갯수 계산해서 a태그 생성 */
-		for(let i=0; i<${ boardList.pageLength }; i++){
-			const pagingNum = i+1
-			const pagingA = $('<a>',{
-				'text': pagingNum,
-				'id': 'page'+pagingNum,
-				'href': '#',
-				'data-num': pagingNum,
-				'class': 'pagingTag'
-			})
-			$('#paging').append(pagingA)
-			
+		if($pageLength != ''){
+			for(let i=0; i<$pageLength; i++){
+				const pagingNum = i+1
+				const pagingA = $('<a>',{
+					'text': pagingNum,
+					'id': 'page'+pagingNum,
+					'href': '#',
+					'data-num': pagingNum,
+					'class': 'pagingTag'
+				})
+				$('#paging').append(pagingA)
+			}
 		}
 	})
 	

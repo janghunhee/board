@@ -17,5 +17,7 @@ public interface BoardService {
 	public Map<String, Object> deleteBoard(BoardDTO boardDTO);
 	
 	public BoardDTO setReWrite(BoardDTO boardDTO);
+	
+	public Map<String, Object> getSearchList(BoardDTO boardDTO);
 
 }

@@ -5,12 +5,11 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.board.domain.BoardDTO;
-import com.board.domain.Paging;
 
 @Mapper
 public interface BoardMapper {
 
-	public List<BoardDTO> selectBoardList(Paging paging);
+	public List<BoardDTO> selectBoardList(BoardDTO boardDTO);
 	
 	public int insertBoard(BoardDTO params);
 	
@@ -20,7 +19,7 @@ public interface BoardMapper {
 	
 	public int deleteBoard(Long idx);
 	
-	public int selectBoardTotalCount();
+	public int selectBoardTotalCount(BoardDTO boardDTO);
 	
 	public Long getLastIdx();
 	
@@ -33,4 +32,6 @@ public interface BoardMapper {
 	public List<BoardDTO> selectChildIdx(Long idx);
 	
 	public void updateChild(BoardDTO boardDTO);
+	
+	public List<BoardDTO> searchList(BoardDTO boardDTO);
 }

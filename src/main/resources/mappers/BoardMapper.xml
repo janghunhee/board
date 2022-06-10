@@ -35,7 +35,7 @@
 			  
 	</select> -->
 
-	<select id="selectBoardList"  parameterType="Paging" resultType="BoardDTO" >
+	<select id="selectBoardList"  parameterType="BoardDTO" resultType="BoardDTO" >
 		WITH RECURSIVE CTE AS (
 			SELECT 
 					IDX, PARENT_IDX, REORDER, TITLE, CONTENT, WRITER, VIEW_CNT, NOTICE_YN, SECRET_YN, DELETE_YN, INSERT_TIME, CONCAT(LPAD(IDX,(SELECT LENGTH(MAX(IDX)) FROM tb_board), '0')) AS PATH, 1 AS DEPTH
@@ -47,7 +47,7 @@
 		    UNION ALL
 		    
 		    SELECT 
-		    		T.IDX, T.PARENT_IDX, T.REORDER, T.TITLE, T.CONTENT, T.WRITER, T.VIEW_CNT, T.NOTICE_YN, T.SECRET_YN, T.DELETE_YN, T.INSERT_TIME,  CONCAT(C.PATH, '-', T.REORDER) AS PATH, C.DEPTH + 1 AS DEPTH
+		    		T.IDX, T.PARENT_IDX, T.REORDER, T.TITLE, T.CONTENT, T.WRITER, T.VIEW_CNT, T.NOTICE_YN, T.SECRET_YN, T.DELETE_YN, T.INSERT_TIME, CONCAT(C.PATH, '-', T.REORDER) AS PATH, C.DEPTH + 1 AS DEPTH
 		    FROM 
 		    		TB_BOARD T
 		    INNER JOIN 
@@ -61,6 +61,17 @@
 				CTE
 		WHERE
 				DELETE_YN = 'N'
+		<if test="searchKey != null and searchKey != '' and searchVal != null and searchVal != ''">
+			<choose>			
+				<when test="searchKey == 'title'">
+					AND TITLE LIKE CONCAT('%', #{searchVal}, '%')
+				</when>
+				<when test="searchKey == 'writer'">
+					AND WRITER LIKE CONCAT('%', #{searchVal}, '%')
+				</when>
+				
+			</choose>
+		</if>
 		ORDER BY 
 				NOTICE_YN DESC,SUBSTRING(PATH,1,(SELECT LENGTH(MAX(IDX)) FROM tb_board)) DESC, PATH
 		LIMIT #{rowNum} OFFSET #{start}
@@ -147,13 +158,23 @@
 		 		idx=#{idx}
 	</update>
 	
-	<select id="selectBoardTotalCount" resultType="int">
+	<select id="selectBoardTotalCount" parameterType="boardDTO" resultType="int">
 		SELECT
 				COUNT(*)
 		  FROM
 		  		tb_board
 		 WHERE
-		 		delete_yn = 'N' 
+		 		delete_yn = 'N'
+		 <if test="searchKey != null and searchKey != '' and searchVal != null and searchVal != ''">
+			<choose>			
+				<when test="searchKey == 'title'">
+					AND TITLE LIKE CONCAT('%', #{searchVal}, '%')
+				</when>
+				<when test="searchKey == 'writer'">
+					AND WRITER LIKE CONCAT('%', #{searchVal}, '%')
+				</when>
+			</choose>
+		 </if> 
 	</select>
 	
 	<update id="setViewCnt" parameterType="Long">
@@ -215,7 +236,7 @@
 		SELECT 
 				IDX 
 		  FROM 
-		  		CTE;
+		  		CTE
 	</select>
 	
 	<update id="updateChild" parameterType="BoardDTO">
@@ -226,5 +247,58 @@
 		 WHERE
 		 		IDX = #{idx}
 	</update>
+	
+	<select id="searchList" parameterType="BoardDTO" resultType="BoardDTO">
+		<!-- SELECT
+				IDX, PARENT_IDX, REORDER, TITLE, CONTENT, WRITER, VIEW_CNT, NOTICE_YN, SECRET_YN, DELETE_YN, INSERT_TIME
+		  FROM
+		  		TB_BOARD
+		 WHERE
+		 		DELETE_YN = 'N'
+		   AND
+		 		#{searchKey}
+		  LIKE
+		  		CONCAT('%', #{searchVal), '%') -->
+		 WITH RECURSIVE CTE AS (
+			SELECT 
+					IDX, PARENT_IDX, REORDER, TITLE, CONTENT, WRITER, VIEW_CNT, NOTICE_YN, SECRET_YN, DELETE_YN, INSERT_TIME, CONCAT(LPAD(IDX,(SELECT LENGTH(MAX(IDX)) FROM tb_board), '0')) AS PATH, 1 AS DEPTH
+		    FROM 
+		    		TB_BOARD 
+		    WHERE 
+		    		PARENT_IDX = 0
+		    
+		    UNION ALL
+		    
+		    SELECT 
+		    		T.IDX, T.PARENT_IDX, T.REORDER, T.TITLE, T.CONTENT, T.WRITER, T.VIEW_CNT, T.NOTICE_YN, T.SECRET_YN, T.DELETE_YN, T.INSERT_TIME, CONCAT(C.PATH, '-', T.REORDER) AS PATH, C.DEPTH + 1 AS DEPTH
+		    FROM 
+		    		TB_BOARD T
+		    INNER JOIN 
+		    		CTE AS C
+		    ON 
+		    		T.PARENT_IDX = C.IDX
+		)
+		SELECT 
+				*, ROW_NUMBER() OVER(ORDER BY SUBSTRING(PATH,1,(SELECT LENGTH(MAX(IDX)) FROM tb_board)) , PATH DESC) AS NUM
+		FROM 
+				CTE
+		WHERE
+				DELETE_YN = 'N'
+		<if test="searchKey != null and searchKey != '' and searchVal != null and searchVal != ''">
+			<choose>			
+				<when test="searchKey == 'title'">
+					AND TITLE LIKE CONCAT('%', #{searchVal}, '%')
+				</when>
+				<when test="searchKey == 'writer'">
+					AND WRITER LIKE CONCAT('%', #{searchVal}, '%')
+				</when>
+				
+			</choose>
+		</if>
+		
+		ORDER BY 
+				NOTICE_YN DESC,SUBSTRING(PATH,1,(SELECT LENGTH(MAX(IDX)) FROM tb_board)) DESC, PATH
+		  		
+	</select>
 
 </mapper>

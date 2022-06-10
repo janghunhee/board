@@ -39,6 +39,15 @@ public class BoardController {
 		model.addAttribute("boardList", boardService.getBoardList(boardDTO));
 		return "board/boardList";
 	}
+	
+	/* 검색 */
+	@Deprecated
+	@GetMapping("/board/search")
+	public String searchList(BoardDTO boardDTO, Model model) {
+		
+		model.addAttribute("boardList", boardService.getSearchList(boardDTO));
+		return "board/boardList";
+	}
 
 	/* 새글 등록 페이지 이동 */
 	@GetMapping("/board/goWrite")

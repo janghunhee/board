@@ -1,5 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=EUC-KR"
-	pageEncoding="EUC-KR"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <!DOCTYPE html>
@@ -28,14 +28,22 @@ a {
 </style>
 <body>
 	<div>
-		<h2>°Ô½ÃÆÇ</h2>
+		<h2>ê²Œì‹œíŒ</h2>
 	</div>
-	<div id = tableBody>
-	</div>
-
+	<div id = "tableBody" ></div>
+	<form id="searchForm">
+		<div id = "search">
+			<select id="searchKey" name="searchKey">
+				<option value="title">ì œëª©</option>
+				<option value="writer">ì‘ì„±ì</option>
+			</select>
+			<input type = "text" id="searchVal" name="searchVal">
+			<button type = "button" id="searchBtn">ê²€ìƒ‰</button>
+		</div>
+	</form>
 	<div class="btn-area" style="margin-top: 30px">
-		<button id="doWrite">±Û¾²±â</button>
-		<button id="doDelete">»èÁ¦</button>
+		<button id="doWrite">ê¸€ì“°ê¸°</button>
+		<button id="doDelete">ì‚­ì œ</button>
 	</div>
 
 	<div>
@@ -47,16 +55,16 @@ a {
 			<label id="noticeDetail"></label>
 		</div>
 		<div>
-			<label>Á¦¸ñ : </label> <label id="titleDetail"></label>
+			<label>ì œëª© : </label> <label id="titleDetail"></label>
 		</div>
 		<div>
-			<label>ÀÌ¸§ : </label> <label id="writerDetail"></label>
+			<label>ì´ë¦„ : </label> <label id="writerDetail"></label>
 		</div>
 		<div>
-			<label>³»¿ë : </label> <label id="contentDetail"></label>
+			<label>ë‚´ìš© : </label> <label id="contentDetail"></label>
 		</div>
 		<div>
-			<label>Á¶È¸¼ö : </label> <label id="viewCntDetail"></label>
+			<label>ì¡°íšŒìˆ˜ : </label> <label id="viewCntDetail"></label>
 		</div>
 		<div id="detailBtn"></div>
 	</div>
@@ -64,27 +72,16 @@ a {
 <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <script type="text/javascript">
 			
-	// Áßº¹À¸·Î ¾²ÀÌ´Â selector 
+	// ì¤‘ë³µìœ¼ë¡œ ì“°ì´ëŠ” selector 
 	const $boardDetail = $('#boardDetail')
 	const $detailBtn = $('#detailBtn')
 	const $detailHeader = $('#detailHeader')
 	const $tableBody = $('#tableBody')
 	
-	// ¸ğµâÈ­ ? 
+	// ëª¨ë“ˆí™” ? 
 	const boardFunc = (function() {
 		
-		const makeAjax = function(urlP, typeP, dataP, dataTypeP) {
-			const ajax = $.ajax({
-							url: '/board/'+urlP,
-							type: typeP,
-							data: dataP,
-							dataType: dataTypeP,
-						})
-			return ajax
-		}
-		
 		const getDetailPswdChk = function(idxP, pswdP, secretYnP) {
-			
 			
 			return new Promise((resolve, reject) => {
 				$.ajax({
@@ -107,9 +104,9 @@ a {
 		}
 		
 		const setBoardDetail = function(param) {
-			const noticeChk = param.Data.noticeYn ? '#°øÁö#' : ''
+			const noticeChk = param.Data.noticeYn ? '#ê³µì§€#' : ''
 			
-			$detailHeader.text('°Ô½Ã±Û »ó¼¼')
+			$detailHeader.text('ê²Œì‹œê¸€ ìƒì„¸')
 			$('#noticeDetail').text(noticeChk)
 			$('#titleDetail').text(param.Data.title)
 			$('#writerDetail').text(param.Data.writer)
@@ -126,7 +123,7 @@ a {
 		}
 		
 		const makeHidden = function(name, value) {
-			const hidden =  $('<input>',{
+			const hidden =  $('<input>', {
 								'type': 'hidden',
 								'name': name,
 								'value': value
@@ -135,7 +132,7 @@ a {
 		}
 		
 		const makeBtn = function(text, id) {
-			const btn = $('<button>',{
+			const btn = $('<button>' ,{
 							'text': text,
 							'id': id,
 						})
@@ -144,12 +141,22 @@ a {
 		}
 		
 		const makeForm = function(url) {
-			const form = $('<form>',{
+			const form = $('<form>', {
 				'method': 'POST',
 				'action': '/board/'+url
 			}) 
 			
 			return form
+		}
+		
+		const makeAjax = function(urlP, typeP, dataP, dataTypeP) {
+			const ajax = $.ajax({
+							url: '/board/'+urlP,
+							type: typeP,
+							data: dataP,
+							dataType: dataTypeP,
+						})
+			return ajax
 		}
 		
 		return {
@@ -163,7 +170,7 @@ a {
 		}
 	})()
 	
-	// Ã³À½ µé¾î¿ÔÀ»¶§ pageNum=1 
+	// ì²˜ìŒ ë“¤ì–´ì™”ì„ë•Œ pageNum=1 
 	$(document).ready(() => {
 		const $ajax = boardFunc.makeAjax('list.do', 'POST', { pageNum : '1' }, 'html')
 		$ajax.done(function(result) {
@@ -171,7 +178,7 @@ a {
 		})
 	})
 	
-	// paging ¼ıÀÚ Å¬¸¯½Ã Event
+	// paging ìˆ«ì í´ë¦­ì‹œ Event
 	$(document).on('click','a.pagingTag', (e) => {
 		e.preventDefault()
 
@@ -181,27 +188,38 @@ a {
 		})
 	})
 	
-	// Á¦¸ñ Å¬¸¯½Ã event 
+	// ê²€ìƒ‰ê¸°ëŠ¥ TODO
+	$('#searchBtn').on('click', (e) => {
+		/* console.log($('#searchForm').serialize()) */
+		const $ajax = boardFunc.makeAjax('list.do', 'POST', $('#searchForm').serialize(), 'html')
+		
+		$ajax.done(function(result) {
+			$tableBody.html(result)
+		})
+		/* $('#searchVal').val('') */
+	})
+	
+	// ì œëª© í´ë¦­ì‹œ event 
 	$(document).on('click','a.boardTitle', (e) => {
 		e.preventDefault()
 		const $this = $(e.currentTarget)
 		const idx = $this.data('idx')
 		const secretYn = $this.data('secret-yn')
 		
-		const upBtn = boardFunc.makeBtn('¼öÁ¤', 'goUpdate')
+		const upBtn = boardFunc.makeBtn('ìˆ˜ì •', 'goUpdate')
 		upBtn.attr('data-idx', idx)
 
-		const reBtn = boardFunc.makeBtn('´ä±Û', 'replyWrite')
+		const reBtn = boardFunc.makeBtn('ë‹µê¸€', 'replyWrite')
 		reBtn.attr('data-parent-idx', idx)
 
 		if(secretYn) {
-			const pswdChk = prompt('ºñ¹Ğ¹øÈ£¸¦ ÀÔ·ÂÇÏ¼¼¿ä')
+			const pswdChk = prompt('ë¹„ë°€ë²ˆí˜¸ë¥¼ ì…ë ¥í•˜ì„¸ìš”')
 			boardFunc.getDetailPswdChk(idx, pswdChk, secretYn)
 			.then((board) => {
 				if(!board.Data){
-					$detailHeader.text('ºñ¹Ğ±Û ÀÔ´Ï´Ù')
+					$detailHeader.text('ë¹„ë°€ê¸€ ì…ë‹ˆë‹¤')
 					$boardDetail.hide()
-					alert('ºñ¹Ğ¹øÈ£¸¦ È®ÀÎÇØÁÖ¼¼¿ä')
+					alert('ë¹„ë°€ë²ˆí˜¸ë¥¼ í™•ì¸í•´ì£¼ì„¸ìš”')
 					
 				} else {
 					boardFunc.setBoardDetail(board)
@@ -212,17 +230,17 @@ a {
 			boardFunc.getDetailPswdChk(idx)
 			.then((board) => {
 				boardFunc.setBoardDetail(board)
+				boardFunc.appendBtn(upBtn, reBtn)
 			})
-			boardFunc.appendBtn(upBtn, reBtn)
 		}
 	})
 	
-	// ±Û¾²±â ¹öÆ° Å¬¸¯½Ã event 
+	// ê¸€ì“°ê¸° ë²„íŠ¼ í´ë¦­ì‹œ event 
 	$('#doWrite').on('click', () => {
 		location.assign('/board/goWrite')
 	})
 	
-	// ¼öÁ¤ ¹öÆ° Å¬¸¯½Ã event 
+	// ìˆ˜ì • ë²„íŠ¼ í´ë¦­ì‹œ event 
 	$(document).on('click', '#goUpdate',(e) => {
 
 		const form = boardFunc.makeForm('goUpdate')
@@ -233,7 +251,7 @@ a {
 		form.submit()
 	}) 
 	
-	// »èÁ¦¹öÆ° Å¬¸¯½Ã 
+	// ì‚­ì œë²„íŠ¼ í´ë¦­ì‹œ 
 	$('#doDelete').on('click', () => {
 		const rowCheck = $('input[name=rowCheck]')
 		const checkedIdx = []
@@ -244,28 +262,30 @@ a {
 			}
 		}
 		
-		if(window.confirm('»èÁ¦ÇÏ½Ã°Ú½À´Ï±î?')){
+		if(window.confirm('ì‚­ì œí•˜ì‹œê² ìŠµë‹ˆê¹Œ?')){
 			const $ajax = boardFunc.makeAjax('delete.do', 'PUT', { idxList: checkedIdx }, 'json')
 			$ajax.success(function(msg) {
 				alert(msg.Data)
 				location.reload()
 			})
 		} else {
-			alert('»èÁ¦°¡ Ãë¼ÒµÇ¾ú½À´Ï´Ù.')
+			alert('ì‚­ì œê°€ ì·¨ì†Œë˜ì—ˆìŠµë‹ˆë‹¤.')
 		}
 	})
 	
-	// ´ä±Û¹öÆ° Å¬¸¯½Ã 
+	// ë‹µê¸€ë²„íŠ¼ í´ë¦­ì‹œ 
 	$(document).on('click', '#replyWrite', (e) => {
 
 		const form = boardFunc.makeForm('goReWrite')
-		// º¸³»Áà¾ßÇÒ parameter = idx(parentIdx·Î »ç¿ë), noticeYn 
+		// ë³´ë‚´ì¤˜ì•¼í•  parameter = idx(parentIdxë¡œ ì‚¬ìš©), noticeYn 
 		const pIdx = boardFunc.makeHidden('parentIdx', $(e.currentTarget).data('parent-idx'))
 		
 		form.append(pIdx)
 		form.appendTo('body')
 		form.submit()
 	})
+	
+	
 	
 </script>
 </html>
