@@ -1,5 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=EUC-KR"
-    pageEncoding="EUC-KR"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>    
 <!DOCTYPE html>
@@ -10,7 +10,7 @@
 </head>
 <body>
 	<span>
-		 ÃÑ <c:out value="${ boardList.Total }" />°³
+		 ì´ <c:out value="${ boardList.Total }" />ê°œ
 	</span>
 	<table>
 		<colgroup>
@@ -25,12 +25,12 @@
 		<thead>
 			<tr>
 				<th><input type="checkbox" id="allCheck"></th>
-				<th>¹øÈ£</th>
-				<th>Á¦¸ñ</th>
-				<th>ÀÛ¼ºÀÚ</th>
-				<th>µî·ÏÀÏ</th>
-				<th>µî·Ï ½Ã°£</th>
-				<th>Á¶È¸¼ö</th>
+				<th>ë²ˆí˜¸</th>
+				<th>ì œëª©</th>
+				<th>ì‘ì„±ì</th>
+				<th>ë“±ë¡ì¼</th>
+				<th>ë“±ë¡ ì‹œê°„</th>
+				<th>ì¡°íšŒìˆ˜</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -46,18 +46,18 @@
 					<td class="title">
 						<c:choose>
 							<c:when test = "${ board.depth == 1 }">
-								<!-- ¿ø±Û -->
+								<!-- ì›ê¸€ -->
 								<c:choose>
 									<c:when test="${ board.noticeYn eq true }">
 										<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
-											#°øÁö# <c:out value="${ board.title }" />
+											#ê³µì§€# <c:out value="${ board.title }" />
 										</a>
 									</c:when>
 									<c:otherwise>
 										<c:choose>
 											<c:when test = "${ board.secretYn eq true }">
 												<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
-													ºñ¹Ğ±Û 
+													ë¹„ë°€ê¸€ 
 												</a>
 											</c:when>
 											<c:otherwise>
@@ -70,14 +70,14 @@
 								</c:choose>
 							</c:when>
 							<c:otherwise>
-								<!-- ´ä±Û -->
+								<!-- ë‹µê¸€ -->
 								<c:choose>
 									<c:when test="${ board.secretYn eq true }">
 										<a href="#" class="boardTitle" data-idx='<c:out value="${ board.idx }" />' data-secret-yn='<c:out value="${ board.secretYn }" />' data-notice-yn='<c:out value="${ board.noticeYn }" />' >
 											<c:forEach var="i" begin="1" end="${ board.depth }">
 										 		&nbsp; 
 										 	</c:forEach>
-											 ¤¤RE: ºñ¹Ğ±Û 
+											 ã„´RE: ë¹„ë°€ê¸€ 
 										</a>
 									</c:when>
 									<c:otherwise>
@@ -85,7 +85,7 @@
 										 	<c:forEach var="i" begin="1" end="${ board.depth }">
 										 		&nbsp; 
 										 	</c:forEach>
-										 	¤¤RE: <c:out value="${ board.title }" />
+										 	ã„´RE: <c:out value="${ board.title }" />
 										 </a>
 									</c:otherwise>
 								</c:choose>
@@ -120,7 +120,7 @@
 	
 	$(document).ready(() => {
 		
-		/* ÆäÀÌÁö °¹¼ö °è»êÇØ¼­ aÅÂ±× »ı¼º */
+		/* í˜ì´ì§€ ê°¯ìˆ˜ ê³„ì‚°í•´ì„œ aíƒœê·¸ ìƒì„± */
 		if($pageLength != ''){
 			for(let i=0; i<$pageLength; i++){
 				const pagingNum = i+1
@@ -136,7 +136,7 @@
 		}
 	})
 	
-	/* Ã¼Å©¹Ú½º ¿©±â¼­ */
+	/* ì²´í¬ë°•ìŠ¤ ì—¬ê¸°ì„œ */
 	$allCheck.on('click', (e) => {
 		let valCheck = false
 		
