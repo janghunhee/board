@@ -24,6 +24,7 @@ th, td {
 
 a {
 	text-decoration:none;
+	padding: 5px;
 }
 </style>
 <body>
@@ -291,7 +292,31 @@ a {
 		form.submit()
 	})
 	
+	//체크박스 test
+	$(document).on('click', '#allCheck', (e) => {
+		let valCheck = false
+		
+		for( const val of $('input[name=rowCheck]') ){
+			if(!val.checked) {
+				
+				valCheck = true
+				break
+			} 
+		}
+		$('input[name=rowCheck]').prop('checked', valCheck)
+		$(e.currentTarget).prop('checked', valCheck)
+	})
 	
+	$(document).on('click', 'input[name=rowCheck]', (e) => {
+		let valCheck = true
+		for(const val of $('input[name=rowCheck]')) {
+			if(!val.checked) {
+				valCheck = false
+				break
+			}
+		}
+		$('#allCheck').prop('checked', valCheck)
+	})
 	
 </script>
 </html>

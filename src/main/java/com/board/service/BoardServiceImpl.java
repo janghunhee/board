@@ -27,15 +27,7 @@ public class BoardServiceImpl implements BoardService {
 		
 		Map<String,Object> rtnVal = new HashMap<>(); 
 		this.setPaging(boardDTO);
-//		Integer getPageNum = boardDTO.getPageNum();
-//		int pageNum = getPageNum != null && getPageNum != 0 ? getPageNum : 1;
-//		boardDTO.setPageNum(boardDTO.getPageNum());
-//		Paging paging = this.setPaging(pageNum);
-//		
-//		List<BoardDTO> lists = boardMapper.selectBoardList(paging);
-		
 		List<BoardDTO> lists = boardMapper.selectBoardList(boardDTO);
-		
 		
 		rtnVal.put("Total", boardDTO.getTotal());
 		rtnVal.put("Data", lists);
@@ -52,7 +44,7 @@ public class BoardServiceImpl implements BoardService {
 		boolean pswdChk = true;
 			
 		if(list.isSecretYn()) {
-			String selPswd = boardMapper.getPswd(boardDTO);
+			String selPswd = boardMapper.getPswd(boardDTO.getIdx());
 			pswdChk = selPswd.equals(boardDTO.getPswd());
 		} 
 		
@@ -109,7 +101,7 @@ public class BoardServiceImpl implements BoardService {
 	@Override
 	public BoardDTO setReWrite(BoardDTO boardDTO) {
 		//parent_idx를 가지고 부모글이 공지글인지 확인
-		boardDTO.setNoticeYn(boardMapper.selectBoardDetail((long) boardDTO.getParentIdx()).isNoticeYn());
+		boardDTO.setNoticeYn(boardMapper.selectBoardDetail((Integer) boardDTO.getParentIdx()).isNoticeYn());
 		
 		return boardDTO;
 	}
@@ -120,12 +112,16 @@ public class BoardServiceImpl implements BoardService {
 	public Map<String, Object> deleteBoard(BoardDTO boardDTO) {
 		Map<String, Object> rtnVal = new HashMap<String, Object>();
 		int resultCnt = 0;
+		int childCnt = 0;
 		
-		for(Long selIdx : boardDTO.getIdxList() ) {
-			resultCnt += boardMapper.deleteBoard(selIdx);
+		for(Integer selIdx : boardDTO.getIdxList() ) {
+			List<BoardDTO> childIdx = boardMapper.selectChildIdx(selIdx);
+			for(BoardDTO deleteIdx : childIdx) {
+				resultCnt += boardMapper.deleteBoard(deleteIdx.getIdx());
+				childCnt += 1;
+			}
 		}
-		
-		String data = resultCnt >=1 ? "삭제되었습니다" : "삭제에 실패했습니다";
+		String data = resultCnt == childCnt ? "삭제되었습니다" : "삭제에 실패했습니다";
 		rtnVal.put("Data", data);
 		
 		return rtnVal;
@@ -133,7 +129,7 @@ public class BoardServiceImpl implements BoardService {
 	
 	// 조회수 증가
 	@Transactional
-	private int getViewCnt(Long idx) {
+	private int getViewCnt(Integer idx) {
 		
 		int resultCnt = boardMapper.setViewCnt(idx);
 		

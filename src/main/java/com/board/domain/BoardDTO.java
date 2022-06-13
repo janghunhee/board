@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 public class BoardDTO extends Paging{
 
 	/** 번호 */
-	private Long idx;
+	private Integer idx;
 	
 	/** 번호 */
 	private Integer num;
@@ -51,7 +51,7 @@ public class BoardDTO extends Paging{
 	private LocalDateTime deleteTime;
 	
 	/** 번호 리스트 */
-	private List<Long> idxList;
+	private List<Integer> idxList;
 	
 	/** 그룹정렬번호 */
 	private Integer depth;

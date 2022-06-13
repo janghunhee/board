@@ -45,7 +45,7 @@
 		LIMIT #{rowNum} OFFSET #{start}
 	</select>
 
-	<select id="selectBoardDetail" parameterType="long" resultType="BoardDTO">
+	<select id="selectBoardDetail" parameterType="Integer" resultType="BoardDTO">
 		SELECT 
 				  IDX			/** 번호(PK) */
 				, PARENT_IDX	/** 부모idx */
@@ -116,7 +116,7 @@
 		 		IDX= #{idx}
 	</update>
 	
-	<update id="deleteBoard" parameterType="long">
+	<update id="deleteBoard" parameterType="Integer">
 		UPDATE 
 				TB_BOARD
 		   SET   
@@ -145,7 +145,7 @@
 		 </if> 
 	</select>
 	
-	<update id="setViewCnt" parameterType="Long">
+	<update id="setViewCnt" parameterType="Integer">
 		UPDATE 
 				TB_BOARD
    		   SET 
@@ -154,7 +154,7 @@
  		 		IDX = #{idx}
 	</update>
 	
-	<select id="getPswd" parameterType="BoardDTO" resultType="string">
+	<select id="getPswd" parameterType="Integer" resultType="string">
 		SELECT
 				PSWD
 		  FROM
@@ -165,7 +165,7 @@
 		  		SECRET_YN = 'Y'
 	</select>
 	
-	<select id = "getLastIdx" resultType = "Long" >
+	<select id = "getLastIdx" resultType = "Integer" >
 		SELECT
 				IFNULL(MAX(IDX),0) + 1 AS IDX
 		  FROM
@@ -181,7 +181,7 @@
 		 		PARENT_IDX = #{parentIdx}
 	</select>
 	
-	<select id="selectChildIdx" parameterType="Long" resultType="BoardDTO" >
+	<select id="selectChildIdx" parameterType="Integer" resultType="BoardDTO" >
 		WITH RECURSIVE CTE AS (
 			SELECT
 					IDX

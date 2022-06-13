@@ -7,7 +7,6 @@ import com.board.domain.BoardDTO;
 
 public interface BoardService {
 	
-	
 	public Map<String, Object> getBoardList(BoardDTO boardDTO);
 	
 	public Map<String, Object> getBoardDetailChk(BoardDTO boardDTO);

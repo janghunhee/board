@@ -121,46 +121,18 @@
 	$(document).ready(() => {
 		
 		/* 페이지 갯수 계산해서 a태그 생성 */
-		if($pageLength != ''){
-			for(let i=0; i<$pageLength; i++){
-				const pagingNum = i+1
-				const pagingA = $('<a>',{
-					'text': pagingNum,
-					'id': 'page'+pagingNum,
-					'href': '#',
-					'data-num': pagingNum,
-					'class': 'pagingTag'
-				})
-				$('#paging').append(pagingA)
-			}
+		for(let i=0; i<$pageLength; i++){
+			const pagingNum = i+1
+			const pagingA = $('<a>',{
+				'text': pagingNum,
+				'id': 'page'+pagingNum,
+				'href': '#',
+				'data-num': pagingNum,
+				'class': 'pagingTag'
+			})
+			$('#paging').append(pagingA)
 		}
-	})
-	
-	/* 체크박스 여기서 */
-	$allCheck.on('click', (e) => {
-		let valCheck = false
 		
-		for( const val of $rowCheck ){
-			if(!val.checked) {
-				
-				valCheck = true
-				break
-			} 
-		}
-		$rowCheck.prop('checked', valCheck)
-		$(e.currentTarget).prop('checked', valCheck)
-		
-	})
-	
-	$rowCheck.on('click', (e) => {
-		let valCheck = true
-		for(const val of $rowCheck) {
-			if(!val.checked) {
-				valCheck = false
-				break
-			}
-		}
-		$allCheck.prop('checked', valCheck)
 	})
 	
 </script>

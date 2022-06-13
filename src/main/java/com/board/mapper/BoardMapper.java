@@ -11,25 +11,25 @@ public interface BoardMapper {
 
 	public List<BoardDTO> selectBoardList(BoardDTO boardDTO);
 	
-	public int insertBoard(BoardDTO params);
+	public int insertBoard(BoardDTO boardDTO);
 	
-	public BoardDTO selectBoardDetail(Long idx);
+	public BoardDTO selectBoardDetail(Integer idx);
 	
-	public int updateBoard(BoardDTO params);
+	public int updateBoard(BoardDTO boardDTO);
 	
-	public int deleteBoard(Long idx);
+	public int deleteBoard(Integer idx);
 	
 	public int selectBoardTotalCount(BoardDTO boardDTO);
 	
-	public Long getLastIdx();
+	public Integer getLastIdx();
 	
-	public int setViewCnt(Long idx);
+	public int setViewCnt(Integer idx);
 	
-	public String getPswd(BoardDTO boardDTO);
+	public String getPswd(Integer idx);
 	
 	public Integer getReorder(Integer parentidx);
 	
-	public List<BoardDTO> selectChildIdx(Long idx);
+	public List<BoardDTO> selectChildIdx(Integer idx);
 	
 	public void updateChild(BoardDTO boardDTO);
 
