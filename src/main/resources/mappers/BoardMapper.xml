@@ -2,38 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.board.mapper.BoardMapper">
-	
-	<!-- <select id="selectBoardList"  parameterType="Paging" resultType="BoardDTO" >
-	    SELECT
-				  @ROWNUM := @ROWNUM + 1 as num
-				  row_number() OVER(ORDER BY notice_yn DESC, group_no DESC, depth DESC) as num
-				, idx			/** 번호(PK) */
-				, title			/** 제목 */
-				, content		/** 내용 */
-				, writer		/** 작성자 */
-				, view_cnt		/** 조회수 */
-				, notice_yn		/** 공지글 여부 */
-				, secret_yn		/** 비밀글 여부 */
-				, delete_yn		/** 삭제 여부 */
-				, insert_time	/** 등록 시간 */
-				, update_time	/** 수정 시간 */
-				, delete_time	/** 삭제 시간 */
-				, group_no		/** 그룹번호 */
-				, parent_idx
-		FROM
-			      tb_board
-                , (select @rownum:=0) as n
-	    WHERE
-	    	    delete_yn='N'
-	 ORDER BY
-	 			  group_no
-	 			, depth
-	    ORDER BY
-				  notice_yn ASC
-                , insert_time DESC
-        LIMIT #{rowNum} OFFSET #{start}
-			  
-	</select> -->
 
 	<select id="selectBoardList"  parameterType="BoardDTO" resultType="BoardDTO" >
 		WITH RECURSIVE CTE AS (
@@ -79,42 +47,42 @@
 
 	<select id="selectBoardDetail" parameterType="long" resultType="BoardDTO">
 		SELECT 
-				  idx			/** 번호(PK) */
-				, parent_idx	/** 부모idx */
-				, title			/** 제목 */
-				, content		/** 내용 */
-				, writer		/** 작성자 */
-				, view_cnt		/** 조회수 */
-				, notice_yn		/** 공지글 여부 */
-				, secret_yn		/** 비밀글 여부 */
-				, delete_yn		/** 삭제 여부 */
-				, insert_time	/** 등록 시간 */
-				, update_time	/** 수정 시간 */
-				, delete_time	/** 삭제 시간 */
+				  IDX			/** 번호(PK) */
+				, PARENT_IDX	/** 부모idx */
+				, TITLE			/** 제목 */
+				, CONTENT		/** 내용 */
+				, WRITER		/** 작성자 */
+				, VIEW_CNT		/** 조회수 */
+				, NOTICE_YN		/** 공지글 여부 */
+				, SECRET_YN		/** 비밀글 여부 */
+				, DELETE_YN		/** 삭제 여부 */
+				, INSERT_TIME	/** 등록 시간 */
+				, UPDATE_TIME	/** 수정 시간 */
+				, DELETE_TIME	/** 삭제 시간 */
 		  FROM 
-		  		tb_board
+		  		TB_BOARD
 		 WHERE 
-		 		delete_yn = 'N'
+		 		DELETE_YN = 'N'
 		   AND 
-		   		idx = #{idx} 
+		   		IDX = #{idx} 
 	</select>
 
 	<insert id="insertBoard" parameterType = "BoardDTO">
-		INSERT INTO tb_board(
-			  idx			/** 번호(PK) */
-			, title			/** 제목 */
-			, content		/** 내용 */
-			, writer		/** 작성자 */
-			, pswd			/** 비밀번호 */
-			, view_cnt		/** 조회수 */
-			, notice_yn		/** 공지글 여부 */
-			, secret_yn		/** 비밀글 여부 */
-			, delete_yn		/** 삭제 여부 */
-			, insert_time	/** 등록 시간 */
-			, update_time	/** 수정 시간 */
-			, delete_time	/** 삭제 시간 */
-			, parent_idx	/** 부모번호 */
-			, reorder		/** 그룹 내 순서 */
+		INSERT INTO TB_BOARD(
+			  IDX			/** 번호(PK) */
+			, TITLE			/** 제목 */
+			, CONTENT		/** 내용 */
+			, WRITER		/** 작성자 */
+			, PSWD			/** 비밀번호 */
+			, VIEW_CNT		/** 조회수 */
+			, NOTICE_YN		/** 공지글 여부 */
+			, SECRET_YN		/** 비밀글 여부 */
+			, DELETE_YN		/** 삭제 여부 */
+			, INSERT_TIME	/** 등록 시간 */
+			, UPDATE_TIME	/** 수정 시간 */
+			, DELETE_TIME	/** 삭제 시간 */
+			, PARENT_IDX	/** 부모번호 */
+			, REORDER		/** 그룹 내 순서 */
 		) VALUES (
 			  #{idx}
 			, #{title}
@@ -135,36 +103,36 @@
 	
 	<update id="updateBoard" parameterType="BoardDTO">
 		UPDATE 
-				tb_board
+				TB_BOARD
 		   SET   
-		   		 update_time = NOW()
-		       , title = #{title}
-		       , content = #{content}
-		       , writer = #{writer}
-		       , pswd = #{pswd}
-		       , notice_yn = #{noticeYn, typeHandler=com.board.handler.BooleanHandler}
-		       , secret_yn = #{secretYn, typeHandler=com.board.handler.BooleanHandler}
+		   		 UPDATE_TIME = NOW()
+		       , TITLE = #{title}
+		       , CONTENT = #{content}
+		       , WRITER = #{writer}
+		       , PSWD = #{pswd}
+		       , NOTICE_YN = #{noticeYn, typeHandler=com.board.handler.BooleanHandler}
+		       , SECRET_YN = #{secretYn, typeHandler=com.board.handler.BooleanHandler}
 		 WHERE 
-		 		idx= #{idx}
+		 		IDX= #{idx}
 	</update>
 	
 	<update id="deleteBoard" parameterType="long">
 		UPDATE 
-				tb_board
+				TB_BOARD
 		   SET   
-		   		 delete_yn = 'Y'
-		       , delete_time = NOW()
+		   		 DELETE_YN = 'Y'
+		       , DELETE_TIME = NOW()
 		 WHERE 
-		 		idx=#{idx}
+		 		IDX=#{idx}
 	</update>
 	
 	<select id="selectBoardTotalCount" parameterType="boardDTO" resultType="int">
 		SELECT
 				COUNT(*)
 		  FROM
-		  		tb_board
+		  		TB_BOARD
 		 WHERE
-		 		delete_yn = 'N'
+		 		DELETE_YN = 'N'
 		 <if test="searchKey != null and searchKey != '' and searchVal != null and searchVal != ''">
 			<choose>			
 				<when test="searchKey == 'title'">
@@ -179,38 +147,38 @@
 	
 	<update id="setViewCnt" parameterType="Long">
 		UPDATE 
-				tb_board
+				TB_BOARD
    		   SET 
-   		   		view_cnt = view_cnt+1
+   		   		VIEW_CNT = VIEW_CNT+1
  		 WHERE 
- 		 		idx = #{idx}
+ 		 		IDX = #{idx}
 	</update>
 	
 	<select id="getPswd" parameterType="BoardDTO" resultType="string">
 		SELECT
-				pswd
+				PSWD
 		  FROM
-		  		tb_board
+		  		TB_BOARD
 		  WHERE
-		  		idx=#{idx}
+		  		IDX=#{idx}
 		  	AND 
-		  		secret_yn = 'Y'
+		  		SECRET_YN = 'Y'
 	</select>
 	
 	<select id = "getLastIdx" resultType = "Long" >
 		SELECT
-				IFNULL(MAX(idx),0) + 1 AS idx
+				IFNULL(MAX(IDX),0) + 1 AS IDX
 		  FROM
-		  		tb_board
+		  		TB_BOARD
 	</select>
 	
 	<select id="getReorder" parameterType="Integer" resultType = "Integer" >
 		SELECT
 				IFNULL(MAX(reorder),0) + 1 AS reorder
 		  FROM
-		  		tb_board
+		  		TB_BOARD
 		 WHERE
-		 		parent_idx = #{parentIdx}
+		 		PARENT_IDX = #{parentIdx}
 	</select>
 	
 	<select id="selectChildIdx" parameterType="Long" resultType="BoardDTO" >
@@ -248,57 +216,4 @@
 		 		IDX = #{idx}
 	</update>
 	
-	<select id="searchList" parameterType="BoardDTO" resultType="BoardDTO">
-		<!-- SELECT
-				IDX, PARENT_IDX, REORDER, TITLE, CONTENT, WRITER, VIEW_CNT, NOTICE_YN, SECRET_YN, DELETE_YN, INSERT_TIME
-		  FROM
-		  		TB_BOARD
-		 WHERE
-		 		DELETE_YN = 'N'
-		   AND
-		 		#{searchKey}
-		  LIKE
-		  		CONCAT('%', #{searchVal), '%') -->
-		 WITH RECURSIVE CTE AS (
-			SELECT 
-					IDX, PARENT_IDX, REORDER, TITLE, CONTENT, WRITER, VIEW_CNT, NOTICE_YN, SECRET_YN, DELETE_YN, INSERT_TIME, CONCAT(LPAD(IDX,(SELECT LENGTH(MAX(IDX)) FROM tb_board), '0')) AS PATH, 1 AS DEPTH
-		    FROM 
-		    		TB_BOARD 
-		    WHERE 
-		    		PARENT_IDX = 0
-		    
-		    UNION ALL
-		    
-		    SELECT 
-		    		T.IDX, T.PARENT_IDX, T.REORDER, T.TITLE, T.CONTENT, T.WRITER, T.VIEW_CNT, T.NOTICE_YN, T.SECRET_YN, T.DELETE_YN, T.INSERT_TIME, CONCAT(C.PATH, '-', T.REORDER) AS PATH, C.DEPTH + 1 AS DEPTH
-		    FROM 
-		    		TB_BOARD T
-		    INNER JOIN 
-		    		CTE AS C
-		    ON 
-		    		T.PARENT_IDX = C.IDX
-		)
-		SELECT 
-				*, ROW_NUMBER() OVER(ORDER BY SUBSTRING(PATH,1,(SELECT LENGTH(MAX(IDX)) FROM tb_board)) , PATH DESC) AS NUM
-		FROM 
-				CTE
-		WHERE
-				DELETE_YN = 'N'
-		<if test="searchKey != null and searchKey != '' and searchVal != null and searchVal != ''">
-			<choose>			
-				<when test="searchKey == 'title'">
-					AND TITLE LIKE CONCAT('%', #{searchVal}, '%')
-				</when>
-				<when test="searchKey == 'writer'">
-					AND WRITER LIKE CONCAT('%', #{searchVal}, '%')
-				</when>
-				
-			</choose>
-		</if>
-		
-		ORDER BY 
-				NOTICE_YN DESC,SUBSTRING(PATH,1,(SELECT LENGTH(MAX(IDX)) FROM tb_board)) DESC, PATH
-		  		
-	</select>
-
 </mapper>

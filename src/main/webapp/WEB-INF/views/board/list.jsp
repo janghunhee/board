@@ -196,7 +196,13 @@ a {
 		$ajax.done(function(result) {
 			$tableBody.html(result)
 		})
-		/* $('#searchVal').val('') */
+	})
+	
+	$('#searchVal').on('keydown', (e) => {
+		if(e.keyCode == 13) {
+			e.preventDefault()
+			$('#searchBtn').trigger('click')
+		}
 	})
 	
 	// 제목 클릭시 event 

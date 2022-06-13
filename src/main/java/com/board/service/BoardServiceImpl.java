@@ -26,16 +26,16 @@ public class BoardServiceImpl implements BoardService {
 	public Map<String,Object> getBoardList(BoardDTO boardDTO) {
 		
 		Map<String,Object> rtnVal = new HashMap<>(); 
-		
+		this.setPaging(boardDTO);
 //		Integer getPageNum = boardDTO.getPageNum();
 //		int pageNum = getPageNum != null && getPageNum != 0 ? getPageNum : 1;
 //		boardDTO.setPageNum(boardDTO.getPageNum());
-		this.setPaging(boardDTO);
 //		Paging paging = this.setPaging(pageNum);
 //		
 //		List<BoardDTO> lists = boardMapper.selectBoardList(paging);
 		
 		List<BoardDTO> lists = boardMapper.selectBoardList(boardDTO);
+		
 		
 		rtnVal.put("Total", boardDTO.getTotal());
 		rtnVal.put("Data", lists);
@@ -60,23 +60,6 @@ public class BoardServiceImpl implements BoardService {
 			this.getViewCnt(boardDTO.getIdx());
 			rtnVal.put("Data", list);	
 		} 
-		
-		return rtnVal;
-	}
-	
-	// 검색
-	@Override
-	@Deprecated
-	public Map<String, Object> getSearchList(BoardDTO boardDTO) {
-		Map<String, Object> rtnVal = new HashMap<String, Object>();
-		
-		this.setPaging(boardDTO);
-		List<BoardDTO> list = boardMapper.searchList(boardDTO);
-//		int total = boardMapper.selectBoardTotalCount(boardDTO);
-		
-		rtnVal.put("Total", boardDTO.getTotal());
-		rtnVal.put("Data", list);
-		rtnVal.put("pageLength", boardDTO.getPageLength());
 		
 		return rtnVal;
 	}
@@ -178,7 +161,7 @@ public class BoardServiceImpl implements BoardService {
 		if(boardDTO.getPageNum() == null) {
 			boardDTO.setPageNum(1);
 		}
-		// 빌더패턴 적용
+		// 빌더패턴 적용 -> 상속때문에 적용x
 //		Paging paging = Paging.builder()
 //							  .total(total)
 //							  .pageNum(pageNum)

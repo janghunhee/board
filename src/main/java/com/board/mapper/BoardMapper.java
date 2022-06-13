@@ -32,6 +32,5 @@ public interface BoardMapper {
 	public List<BoardDTO> selectChildIdx(Long idx);
 	
 	public void updateChild(BoardDTO boardDTO);
-	
-	public List<BoardDTO> searchList(BoardDTO boardDTO);
+
 }
