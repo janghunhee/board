@@ -31,6 +31,13 @@ a {
 	<div>
 		<h2>게시판</h2>
 	</div>
+	<div id = "rowNumDiv">
+		<select id="selectRowNum" name="rowNum">
+			<option value="5">5</option>
+			<option value="10" selected>10</option>
+			<option value="20">20</option>
+		</select>
+	</div>
 	<div id = "tableBody" ></div>
 	<form id="searchForm">
 		<div id = "search">
@@ -78,9 +85,12 @@ a {
 	const $detailBtn = $('#detailBtn')
 	const $detailHeader = $('#detailHeader')
 	const $tableBody = $('#tableBody')
+	const $selectRowNum = $('#selectRowNum')
+	const $searchBtn = $('#searchBtn')
 	
 	// 모듈화 ? 
 	const boardFunc = (function() {
+		const $searchForm = $('#searchForm')
 		
 		const getDetailPswdChk = function(idxP, pswdP, secretYnP) {
 			
@@ -160,6 +170,24 @@ a {
 			return ajax
 		}
 		
+		const getBoardList = function(pageNumP, rowNumP) {
+			const param = {
+					pageNum: pageNumP,
+					rowNum: rowNumP
+			}
+			this.makeAjax('list.do', 'POST', param, 'html').success(function(result) {
+				$tableBody.html(result)
+			})
+		}
+		
+		const getSearchList = function() {
+			$searchForm.append($selectRowNum)
+			this.makeAjax('list.do', 'POST', $searchForm.serialize(), 'html').done(function(result) {
+				$tableBody.html(result)
+				$('#rowNumDiv').append($selectRowNum)
+			})
+		}
+		
 		return {
 			getDetailPswdChk,
 			setBoardDetail,
@@ -167,42 +195,38 @@ a {
 			makeHidden,
 			makeBtn,
 			makeForm,
-			makeAjax
+			makeAjax,
+			getBoardList,
+			getSearchList
 		}
 	})()
 	
 	// 처음 들어왔을때 pageNum=1 
 	$(document).ready(() => {
-		const $ajax = boardFunc.makeAjax('list.do', 'POST', { pageNum : '1' }, 'html')
-		$ajax.done(function(result) {
-			$tableBody.html(result)
-		})
+		boardFunc.getBoardList()
 	})
 	
 	// paging 숫자 클릭시 Event
 	$(document).on('click','a.pagingTag', (e) => {
 		e.preventDefault()
-
-		const $ajax = boardFunc.makeAjax('list.do','POST',{ pageNum: $(e.currentTarget).data('num') },'html')
-		$ajax.done(function(result){
-			$tableBody.html(result)
-		})
+		boardFunc.getBoardList($(e.currentTarget).data('num'), $selectRowNum.val())
 	})
 	
-	// 검색기능 TODO
-	$('#searchBtn').on('click', (e) => {
-		/* console.log($('#searchForm').serialize()) */
-		const $ajax = boardFunc.makeAjax('list.do', 'POST', $('#searchForm').serialize(), 'html')
-		
-		$ajax.done(function(result) {
-			$tableBody.html(result)
-		})
+	// rownum 클릭시
+	$selectRowNum.on('change', (e) => {
+		boardFunc.getSearchList()
 	})
 	
+	// 검색기능
+	$searchBtn.on('click', (e) => {
+		boardFunc.getSearchList()
+	})
+	
+	/* 엔터키 설정 */
 	$('#searchVal').on('keydown', (e) => {
 		if(e.keyCode == 13) {
 			e.preventDefault()
-			$('#searchBtn').trigger('click')
+			$searchBtn.trigger('click')
 		}
 	})
 	
@@ -293,7 +317,7 @@ a {
 		form.submit()
 	})
 	
-	//체크박스 test
+	// 체크박스 
 	$(document).on('click', '#allCheck', (e) => {
 		let valCheck = false
 		

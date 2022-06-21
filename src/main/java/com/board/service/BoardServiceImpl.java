@@ -164,6 +164,11 @@ public class BoardServiceImpl implements BoardService {
 		if(boardDTO.getPageNum() == null) {
 			boardDTO.setPageNum(1);
 		}
+		if(boardDTO.getRowNum() == null) {
+			boardDTO.setRowNum(10);
+		}
+		Integer rowNum = boardDTO.getRowNum();
+		
 		// 빌더패턴 적용 -> 상속때문에 적용x
 //		Paging paging = Paging.builder()
 //							  .total(total)
@@ -174,9 +179,8 @@ public class BoardServiceImpl implements BoardService {
 //							  .build();
 		
 		boardDTO.setTotal(total);
-		boardDTO.setPageLength((total/ROWNUM) + 1);
-		boardDTO.setStart((boardDTO.getPageNum()-1) * ROWNUM);
-		boardDTO.setRowNum(ROWNUM);
+		boardDTO.setPageLength((total/rowNum) + 1);
+		boardDTO.setStart((boardDTO.getPageNum()-1) * rowNum);
 		
 		
 		return boardDTO;

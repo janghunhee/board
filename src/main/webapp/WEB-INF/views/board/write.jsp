@@ -28,13 +28,14 @@
 	<c:choose>
 		<c:when test="${ empty board.idx and empty board.parentIdx  }">
 			<div>
-				<button type="button" id="addFormBtn">+</button>
+				<button type="button" id="addFormBtn"><span>+</span></button>
+				<button type="button" id="removeBtn"><span>-</span></button>
 			</div>
 		</c:when>
 	</c:choose>
 	<div id="formDiv">
 		<form id="form">
-			<div id="form0">
+			<div id="form0" class="formInput">
 				<div>
 					<input type="hidden" class="idx" name="idx" value='<c:out value="${ board.idx }" />' />
 					<input type="hidden" class="parentIdx" name="parentIdx" value='<c:out value="${ board.parentIdx }" />' />
@@ -65,6 +66,9 @@
 						<textarea class="content" name="content" placeholder="내용을 입력해 주세요." required><c:out value="${ board.content }" /></textarea>
 					</div>
 				</div>
+				<div>
+					<span>==========================</span>
+				</div>
 			</div>
 		</form>
 	</div>
@@ -87,6 +91,7 @@
 	const $noticeYn = $('.noticeYn')
 	const $secretYn = $('.secretYn')
 	const $pswd = $('.pswd')
+	const $formInput = $('.formInput')
 	
 	/* 모듈 */
 	const boardWrite = (function() {
@@ -119,8 +124,26 @@
 		const writeForm = function() {
 			++formCnt
 			const $clone = $('#form0').clone()
+			const $checkbox = $clone.find('input[type=checkbox]')
 			$clone.prop('id', 'form'+formCnt)
+			$clone.find('input[type=text]').val('')
+			$checkbox.prop('checked', false)
+			$checkbox.prop('disabled', false)
+			$checkbox.val('false')
+			$clone.find('.pswd').prop('disabled', true)
+			$clone.find('textarea').val('')
 			$clone.appendTo('#form')
+			console.log(formCnt)
+		}
+		
+		const removeForm = function() {
+			if(formCnt > 0) {
+				$('.formInput').remove('#form'+formCnt)
+				formCnt--
+				console.log(formCnt)
+			} else {
+				alert('삭제할 수 없습니다')
+			}
 		}
 		
 		const registForm = function() {
@@ -142,20 +165,24 @@
 			return boardList
 			
 		}
-		
 
 		return {
 			makeInput : makeInput,
 			makeAjax : makeAjax,
 			writeForm : writeForm,
 			registForm : registForm,
-			makeLabel : makeLabel
+			makeLabel : makeLabel,
+			removeForm : removeForm
 		}
 	})()
 	
 	$('#addFormBtn').on('click', () => {
 		boardWrite.writeForm()
-	}) 
+	})
+	
+	$('#removeBtn').on('click', () => {
+		boardWrite.removeForm()
+	})
 	
 	/* 수정으로 들어왔을 때 기본값 세팅 */
 	$(document).ready(function() {
@@ -168,35 +195,6 @@
 			$secretYn.prop('disabled', true)
 		}
 		
-		$noticeYn.on('change', (e) => {
-			const $this = $(e.currentTarget)
-			
-			if($this.is(':checked')) {
-				$this.val(true)
-				$secretYn.prop('checked', false)
-				$secretYn.prop('disabled', true)
-				$secretYn.trigger('change')
-			} else {
-				$this.val(false)
-				$secretYn.prop('disabled', false)
-				$secretYn.trigger('change')
-			}
-		})
-		
-		$secretYn.on('change', (e) => {
-			const $this = $(e.currentTarget)
-			
-			if($this.is(':checked')) {
-				$this.val(true)
-				$pswd.prop('disabled', false)
-			} else {
-				$this.val(false)
-				$pswd.prop('disabled', true) 
-				$pswd.val('')
-			}
-		})
-		
-		
 		// 답글일때
 		if($('.parentIdx').val() != '' && $('.parentIdx').val() != 0){
 			//공지 변경 x 부모의 공지를 따른다.
@@ -204,15 +202,65 @@
 		}
 	})
 	
+	/* 체크박스 test */
+	$(document).on('change', '.noticeYn', function() {
+		$('.formInput').each(function() {
+			const $notice = $(this).find('.noticeYn')
+			const $secret = $(this).find('.secretYn')
+			
+			if($notice.is(':checked')) {
+				$notice.val(true)
+				$secret.prop('checked', false)
+				$secret.prop('disabled', true)
+				$secretYn.trigger('change')
+			} else {
+				$notice.val(false)
+				$secret.prop('disabled', false)
+				$secretYn.trigger('change')
+			}
+		})
+	})
+	
+	$(document).on('change', '.secretYn', function() {
+		$('.formInput').each(function() {
+			const $secret = $(this).find('.secretYn')
+			const $pswdf = $(this).find('.pswd')
+			
+			if($secret.is(':checked')) {
+				$secret.val(true)
+				$pswdf.prop('disabled', false)
+			} else {
+				$secret.val(false)
+				$pswdf.prop('disabled', true) 
+				$pswdf.val('')
+			}
+		})
+	})
+	
+	
 	/* 등록/수정 버튼 클릭시 */
 	$('#submit').on('click', (e) => {
-		let valChk = false
-		
-		$('.title').val() === '' ? alert('제목을 입력해주세요')
-		: $('.writer').val() === '' ? alert('이름을 입력해주세요')
-		: $('.content').val() === '' ? alert ('내용을 입력해주세요')
-		: $secretYn.val() === 'true' && $pswd.val() === '' ? alert('비밀번호를 설정해주세요') 
-		: valChk = true
+		let valChk = true
+
+		$('.formInput').each(function(){
+			if($(this).find('.title').val() === '') {
+				alert('제목을 입력해주세요.')
+				valChk = false
+				return false
+			} else if($(this).find('.writer').val() === '') {
+				alert('이름을 입력해주세요.') 
+				valChk = false
+				return false
+			} else if($(this).find('.secretYn').val() === 'true' && $(this).find('.pswd').val() === '') {
+				alert('비밀번호를 입력해주세요.') 
+				valChk = false
+				return false
+			} else if($(this).find('.content').val() === '') {
+				alert('내용을 입력해주세요') 
+				valChk = false
+				return false
+			}
+		})
 		
 		if(valChk){
 			$.ajax({
