@@ -212,6 +212,7 @@ a {
 		const $this = $(e.currentTarget)
 		const idx = $this.data('idx')
 		const secretYn = $this.data('secret-yn')
+	
 		
 		const upBtn = boardFunc.makeBtn('수정', 'goUpdate')
 		upBtn.attr('data-idx', idx)

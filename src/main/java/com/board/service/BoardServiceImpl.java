@@ -59,30 +59,37 @@ public class BoardServiceImpl implements BoardService {
 	// 등록,수정,댓글등록
 	@Override
 	@Transactional
-	public boolean registerBoard(BoardDTO boardDTO) {
+	public Map<String, Integer> registerBoard(List<BoardDTO> boardList) {
+		Map<String, Integer> rtnVal = new HashMap<String, Integer>();
 		int resultCnt = 0;
-		
+		BoardDTO board = boardList.get(0);
+
 		// 새글등록 - idx null, parentIdx null
-		if(boardDTO.getIdx() == null && boardDTO.getParentIdx() == null) {
-			boardDTO.setIdx(boardDTO.getIdx() == null ? boardMapper.getLastIdx() : boardDTO.getIdx());
-			this.setReorder(boardDTO);
-			resultCnt = boardMapper.insertBoard(boardDTO);
+		if(board.getIdx() == null && board.getParentIdx() == null) {
+			for(BoardDTO item : boardList) {
+				this.setReorder(item);
+				resultCnt += boardMapper.insertBoard(item);
+			}
+			rtnVal.put("total", boardList.size());
+			rtnVal.put("success", resultCnt);
+			
+			return rtnVal;
 		}
 		
 		// 글 수정 - idx , parentIdx null
-		if(boardDTO.getIdx() != null && boardDTO.getParentIdx() != null) {
-			this.updateBoard(boardDTO);
-			resultCnt = boardMapper.updateBoard(boardDTO);
+		if(board.getIdx() != null && board.getParentIdx() != null) {
+			this.updateBoard(board);
+			resultCnt = boardMapper.updateBoard(board);
 		}
 		
 		// 답글 등록 - idx null, parentIdx
-		if(boardDTO.getIdx() == null && boardDTO.getParentIdx() != null) {
-			boardDTO.setIdx(boardDTO.getIdx() == null ? boardMapper.getLastIdx() : boardDTO.getIdx());
-			this.setReorder(boardDTO);
-			resultCnt = boardMapper.insertBoard(boardDTO);
+		if(board.getIdx() == null && board.getParentIdx() != null) {
+			board.setIdx(board.getIdx() == null ? boardMapper.getLastIdx() : board.getIdx());
+			this.setReorder(board);
+			resultCnt = boardMapper.insertBoard(board);
 		}
 		
-		return resultCnt == 0 ? false : true;
+		return rtnVal;
 	}
 	
 	// 자식 글 공지 수정

@@ -1,13 +1,17 @@
 package com.board.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.board.domain.BoardDTO;
@@ -64,11 +68,18 @@ public class BoardController {
 	}
 	
 	/* 등록/수정 */
+//	@PostMapping("/board/register.do")
+//	public String registBoard(BoardDTO boardDTO) {
+//		
+//		boardService.registerBoard(boardDTO);
+//		return "redirect:/board/goList";
+//	}
+	/* 비동기, 다중등록 */
+	@ResponseBody
 	@PostMapping("/board/register.do")
-	public String registBoard(BoardDTO boardDTO) {
+	public Map<String, Integer> registBoard(@RequestBody List<BoardDTO> boardList) {
 		
-		boardService.registerBoard(boardDTO);
-		return "redirect:/board/goList";
+		return boardService.registerBoard(boardList);
 	}
 
 	/* 삭제 */
@@ -86,4 +97,11 @@ public class BoardController {
 		
 		return boardService.getBoardDetailChk(boardDTO);
 	}
+	
+	
+//	@GetMapping("/board/listChk")
+//	public Map<String, Object> getDetailPswdChk(List<Board> boardList) {
+//		
+//		return "dwdw/trhrt/"
+//	}
 }
