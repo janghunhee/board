@@ -50,20 +50,20 @@
 				</div>
 				<div>
 					<label for="title">제목</label> 
-					<input type="text" class="title" name="title" value='<c:out value="${ board.title }" />' placeholder="제목을 입력해 주세요." required />
+					<input type="text" class="title" name="title" data-validate-name="제목" value='<c:out value="${ board.title }" />' placeholder="제목을 입력해 주세요." required />
 				</div>
 				<div>
 					<label for="writer">이름</label> 
-					<input type="text" class="writer" name="writer" value='<c:out value="${ board.writer }" />' placeholder="이름을 입력해 주세요." required />
+					<input type="text" class="writer" name="writer" data-validate-name="이름" value='<c:out value="${ board.writer }" />' placeholder="이름을 입력해 주세요." required />
 				</div>
 				<div>
 					<label for="pswd">비밀번호</label> 
-					<input type="password" class="pswd" name="pswd" placeholder="비밀번호를 입력해 주세요" disabled />
+					<input type="password" class="pswd" name="pswd" data-validate-name="비밀번호" placeholder="비밀번호를 입력해 주세요" disabled />
 				</div>
 				<div>
 					<label for="content">내용</label>
 					<div>
-						<textarea class="content" name="content" placeholder="내용을 입력해 주세요." required><c:out value="${ board.content }" /></textarea>
+						<textarea class="content" name="content" data-validate-name="내용" placeholder="내용을 입력해 주세요." required><c:out value="${ board.content }" /></textarea>
 					</div>
 				</div>
 				<div>
@@ -125,6 +125,7 @@
 			++formCnt
 			const $clone = $('#form0').clone()
 			const $checkbox = $clone.find('input[type=checkbox]')
+			
 			$clone.prop('id', 'form'+formCnt)
 			$clone.find('input[type=text]').val('')
 			$checkbox.prop('checked', false)
@@ -133,16 +134,12 @@
 			$clone.find('.pswd').prop('disabled', true)
 			$clone.find('textarea').val('')
 			$clone.appendTo('#form')
-			console.log(formCnt)
 		}
 		
 		const removeForm = function() {
 			if(formCnt > 0) {
 				$('.formInput').remove('#form'+formCnt)
 				formCnt--
-				console.log(formCnt)
-			} else {
-				alert('삭제할 수 없습니다')
 			}
 		}
 		
@@ -165,6 +162,14 @@
 			return boardList
 			
 		}
+		const secretChange = function() {
+			$('input.secretYn').trigger('change')
+		}
+		
+		const valAlert = function(name) {
+			alert(name+'을 입력해주세요.')
+		}
+		
 
 		return {
 			makeInput : makeInput,
@@ -172,7 +177,9 @@
 			writeForm : writeForm,
 			registForm : registForm,
 			makeLabel : makeLabel,
-			removeForm : removeForm
+			removeForm : removeForm,
+			secretChange : secretChange,
+			valAlert : valAlert
 		}
 	})()
 	
@@ -195,11 +202,17 @@
 			$secretYn.prop('disabled', true)
 		}
 		
+		// 체크박스 값이없으면 value=false로 셋팅
+		if(!$(':checkbox').val()) {
+			$noticeYn.val(false)
+			$secretYn.val(false)
+		}
+		
 		// 답글일때
 		if($('.parentIdx').val() != '' && $('.parentIdx').val() != 0){
 			//공지 변경 x 부모의 공지를 따른다.
 			$noticeYn.prop('disabled', true)
-		}
+		} 
 	})
 	
 	/* 체크박스 test */
@@ -212,11 +225,11 @@
 				$notice.val(true)
 				$secret.prop('checked', false)
 				$secret.prop('disabled', true)
-				$secretYn.trigger('change')
+				boardWrite.secretChange()
 			} else {
 				$notice.val(false)
 				$secret.prop('disabled', false)
-				$secretYn.trigger('change')
+				boardWrite.secretChange()
 			}
 		})
 	})
@@ -243,24 +256,45 @@
 		let valChk = true
 
 		$('.formInput').each(function(){
-			if($(this).find('.title').val() === '') {
-				alert('제목을 입력해주세요.')
+			let valName = ''
+			if(!$(this).find('.title').val()) {
+				valName = $(this).find('.title').data('validate-name')
 				valChk = false
-				return false
-			} else if($(this).find('.writer').val() === '') {
-				alert('이름을 입력해주세요.') 
+			} else if(!$(this).find('.writer').val()) {
+				valName = $(this).find('.writer').data('validate-name') 
 				valChk = false
-				return false
-			} else if($(this).find('.secretYn').val() === 'true' && $(this).find('.pswd').val() === '') {
-				alert('비밀번호를 입력해주세요.') 
+			} else if($(this).find('.secretYn').val() === 'true' && !$(this).find('.pswd').val()) {
+				valName = $(this).find('.pswd').data('validate-name')
 				valChk = false
-				return false
-			} else if($(this).find('.content').val() === '') {
-				alert('내용을 입력해주세요') 
+			} else if(!$(this).find('.content').val()) {
+				valName = $(this).find('.content').data('validate-name') 
 				valChk = false
+			}
+			
+			if(!valChk) {
+				alert(valName+'을 입력해주세요.')
 				return false
 			}
 		})
+		
+		/* $('div.formInput :text, :checkbox, :password, textarea').each(function() {
+			let valName = ''
+			
+			if(!$('.title').val()) {
+				valName = $(':text[name="title"]').data('validate-name')
+			} else if(!$(':text[name="writer"]').val()) {
+				valName = $(':text[name="writer"]').data('validate-name')
+			} else if($(':checkbox[name="secretYn"]').val() === 'true' && !$(':password').val()) {
+				valName = $(':password').data('validate-name')
+			} else if(!$('textarea').val()) {
+				valName = $('textarea').data('validate-name')
+			}
+			
+			if(valName) {
+				alert(valName+'을 입력해주세요.')
+				return false
+			}
+		}) */
 		
 		if(valChk){
 			$.ajax({

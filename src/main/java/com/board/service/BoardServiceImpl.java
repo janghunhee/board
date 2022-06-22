@@ -1,5 +1,6 @@
 package com.board.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,15 +62,21 @@ public class BoardServiceImpl implements BoardService {
 	@Transactional
 	public Map<String, Integer> registerBoard(List<BoardDTO> boardList) {
 		Map<String, Integer> rtnVal = new HashMap<String, Integer>();
+		List<BoardDTO> insertList = new ArrayList<BoardDTO>();
 		int resultCnt = 0;
 		BoardDTO board = boardList.get(0);
 
 		// 새글등록 - idx null, parentIdx null
 		if(board.getIdx() == null && board.getParentIdx() == null) {
+			int getIdx = boardMapper.getLastIdx();
 			for(BoardDTO item : boardList) {
 				this.setReorder(item);
-				resultCnt += boardMapper.insertBoard(item);
+				item.setIdx(getIdx++);
+//				resultCnt += boardMapper.insertBoard(item);
+				insertList.add(item);
 			}
+			resultCnt = boardMapper.insertBoard(insertList);
+			
 			rtnVal.put("total", boardList.size());
 			rtnVal.put("success", resultCnt);
 			
@@ -78,7 +85,7 @@ public class BoardServiceImpl implements BoardService {
 		
 		// 글 수정 - idx , parentIdx null
 		if(board.getIdx() != null && board.getParentIdx() != null) {
-			this.updateBoard(board);
+			this.updateChild(board);
 			resultCnt = boardMapper.updateBoard(board);
 		}
 		
@@ -86,7 +93,7 @@ public class BoardServiceImpl implements BoardService {
 		if(board.getIdx() == null && board.getParentIdx() != null) {
 			board.setIdx(board.getIdx() == null ? boardMapper.getLastIdx() : board.getIdx());
 			this.setReorder(board);
-			resultCnt = boardMapper.insertBoard(board);
+			resultCnt = boardMapper.insertBoard(boardList);
 		}
 		
 		return rtnVal;
@@ -94,7 +101,7 @@ public class BoardServiceImpl implements BoardService {
 	
 	// 자식 글 공지 수정
 	@Transactional
-	private void updateBoard(BoardDTO boardDTO) {
+	private void updateChild(BoardDTO boardDTO) {
 		if(boardDTO.isNoticeYn() != boardMapper.selectBoardDetail(boardDTO.getIdx()).isNoticeYn()) {
 			List<BoardDTO> list = boardMapper.selectChildIdx(boardDTO.getIdx());
 			for(BoardDTO item : list) {

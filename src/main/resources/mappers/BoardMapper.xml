@@ -67,7 +67,7 @@
 		   		IDX = #{idx} 
 	</select>
 
-	<insert id="insertBoard" parameterType = "BoardDTO">
+	<insert id="insertBoard" parameterType="list">
 		INSERT INTO TB_BOARD(
 			  IDX			/** 번호(PK) */
 			, TITLE			/** 제목 */
@@ -83,22 +83,25 @@
 			, DELETE_TIME	/** 삭제 시간 */
 			, PARENT_IDX	/** 부모번호 */
 			, REORDER		/** 그룹 내 순서 */
-		) VALUES (
-			  #{idx}
-			, #{title}
-			, #{content}
-			, #{writer}
-			, #{pswd}
-			, 0
-			, #{noticeYn, typeHandler=com.board.handler.BooleanHandler}
-			, #{secretYn, typeHandler=com.board.handler.BooleanHandler}
-			, 'N'
-			, NOW()
-			, NULL
-			, NULL
-			, #{parentIdx}
-			, #{reorder}
-		)
+		) VALUES
+		<foreach collection="list" item="item" separator=",">
+			(
+				  #{item.idx}
+				, #{item.title}
+				, #{item.content}
+				, #{item.writer}
+				, #{item.pswd}
+				, 0
+				, #{item.noticeYn, typeHandler=com.board.handler.BooleanHandler}
+				, #{item.secretYn, typeHandler=com.board.handler.BooleanHandler}
+				, 'N'
+				, NOW()
+				, NULL
+				, NULL
+				, #{item.parentIdx}
+				, #{item.reorder}
+			)
+		</foreach>
 	</insert>
 	
 	<update id="updateBoard" parameterType="BoardDTO">

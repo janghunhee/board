@@ -255,6 +255,7 @@ a {
 					
 				} else {
 					boardFunc.setBoardDetail(board)
+					upBtn.attr('data-pswd', pswdChk)
 					boardFunc.appendBtn(upBtn, reBtn)
 				}
 			})
@@ -274,9 +275,13 @@ a {
 	
 	// 수정 버튼 클릭시 event 
 	$(document).on('click', '#goUpdate',(e) => {
-
+		const $this = $(e.currentTarget)
+		
 		const form = boardFunc.makeForm('goUpdate')
-		const idx = boardFunc.makeHidden('idx', $(e.currentTarget).data('idx'))
+		const idx = boardFunc.makeHidden('idx', $this.data('idx'))
+		if($this.data('pswd')) {
+			form.append(boardFunc.makeHidden('pswd', $this.data('pswd')))
+		}
 		
 		form.append(idx)
 		form.appendTo('body')
