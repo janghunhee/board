@@ -103,7 +103,7 @@
 			return $.ajax({
 				url: '/board/'+urlP,
 				type: typeP,
-				data: dataP ,
+				data: dataP,
 				dataType: dataTypeP,
 				contentType : contentTypeP,
 				traditional: 'true'
@@ -185,7 +185,7 @@
 		$secretYn.prop('checked', $secretYn.val() === 'true' ? $pswd.prop('disabled', false) : false)
 		
 		if($noticeYn.is(':checked')){
-			$secretYn.val(false) 
+			$secretYn.val(false)
 			$secretYn.prop('disabled', true)
 		}
 		
@@ -199,7 +199,7 @@
 		if($parentVal != '' && $parentVal != 0){
 			//공지 변경 x 부모의 공지를 따른다.
 			$noticeYn.prop('disabled', true)
-		} 
+		}
 	})
 	
 	/* 체크박스 test */
@@ -233,7 +233,7 @@
 				$pswdf.prop('disabled', false)
 			} else {
 				$secret.val(false)
-				$pswdf.prop('disabled', true) 
+				$pswdf.prop('disabled', true)
 				$pswdf.val('')
 			}
 		})
@@ -250,13 +250,13 @@
 				valName = $(this).find('.title').data('validate-name')
 				valChk = false
 			} else if(!$(this).find('.writer').val()) {
-				valName = $(this).find('.writer').data('validate-name') 
+				valName = $(this).find('.writer').data('validate-name')
 				valChk = false
 			} else if($(this).find('.secretYn').val() === 'true' && !$(this).find('.pswd').val()) {
 				valName = $(this).find('.pswd').data('validate-name')
 				valChk = false
 			} else if(!$(this).find('.content').val()) {
-				valName = $(this).find('.content').data('validate-name') 
+				valName = $(this).find('.content').data('validate-name')
 				valChk = false
 			}
 			
@@ -278,7 +278,7 @@
 				(itemName =='pswd' && !itemVal && $(item).closest(formInput).find('input[name="secretYn"]').val() == 'true') ||
 				(itemName =='content' && !itemVal)) {
 					valName = $(item).data('validateName')
-			} 
+			}
 			
 			if(valName) {
 				alert($(item).closest(formInput).data('cnt') + '번 글의 ' + valName+'을 입력해주세요.')
@@ -293,7 +293,7 @@
 				alert('총 : '+ result.total +' 성공 : ' + result.success + ' 실패 : ' + result.fail)
 				location.replace('/board/goList')
 			})
-		} 
+		}
 	})
 </script>
 </html>

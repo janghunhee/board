@@ -19,14 +19,11 @@ public class BoardServiceImpl implements BoardService {
 	@Autowired
 	private BoardMapper boardMapper;
 	
-	/** 행당 갯수 */
-	private static final Integer ROWNUM = 10;
-	
 	// 전체 조회
 	@Override
 	public Map<String,Object> getBoardList(BoardDTO boardDTO) {
 		
-		Map<String,Object> rtnVal = new HashMap<>(); 
+		Map<String,Object> rtnVal = new HashMap<>();
 		this.setPaging(boardDTO);
 		List<BoardDTO> lists = boardMapper.selectBoardList(boardDTO);
 		
@@ -47,12 +44,12 @@ public class BoardServiceImpl implements BoardService {
 		if(list.isSecretYn()) {
 			String selPswd = boardMapper.getPswd(boardDTO.getIdx());
 			pswdChk = selPswd.equals(boardDTO.getPswd());
-		} 
+		}
 		
 		if(pswdChk) {
 			this.getViewCnt(boardDTO.getIdx());
-			rtnVal.put("Data", list);	
-		} 
+			rtnVal.put("Data", list);
+		}
 		
 		return rtnVal;
 	}
@@ -62,7 +59,6 @@ public class BoardServiceImpl implements BoardService {
 	public Map<String, Integer> registerBoard(List<BoardDTO> boardList) {
 		Map<String, Integer> rtnVal = new HashMap<String, Integer>();
 		int successCnt = 0;
-		int failCnt = 0;
 		BoardDTO board = boardList.get(0);
 		
 		// 글 수정 - idx , parentIdx null
@@ -71,7 +67,7 @@ public class BoardServiceImpl implements BoardService {
 				successCnt = boardMapper.updateBoard(board);
 				this.updateChild(board);
 			} catch(Exception e) {
-				failCnt++;
+				e.printStackTrace();
 			}
 		}
 
@@ -82,7 +78,7 @@ public class BoardServiceImpl implements BoardService {
 			try {
 				successCnt = boardMapper.insertBoard(board);
 			} catch(Exception e) {
-				failCnt++;
+				e.printStackTrace();
 			}
 		}
 		
@@ -94,15 +90,17 @@ public class BoardServiceImpl implements BoardService {
 				item.setIdx(getIdx++);
 				try {
 					successCnt += boardMapper.insertBoard(item);
-				} catch (Exception e) {
-					failCnt++;
+				} catch(Exception e) {
+					e.printStackTrace();
 				}
 			}
 		}
 		
-		rtnVal.put("total", boardList.size());
+		int total = boardList.size();
+		
+		rtnVal.put("total", total);
 		rtnVal.put("success", successCnt);
-		rtnVal.put("fail", failCnt);
+		rtnVal.put("fail", total - successCnt);
 		
 		return rtnVal;
 	}
@@ -162,14 +160,14 @@ public class BoardServiceImpl implements BoardService {
 	private BoardDTO setReorder(BoardDTO boardDTO) {
 		//parent_idx가 없을땐 1, parent_idx가 있다면?
 		Integer pIdx = boardDTO.getParentIdx();
-		
+
 		if(pIdx == null) {
 			boardDTO.setParentIdx(0);
 			boardDTO.setReorder(1);
 		} else {
 			boardDTO.setReorder(boardMapper.getReorder(pIdx));
 		}
-		
+
 		return boardDTO;
 	}
 	

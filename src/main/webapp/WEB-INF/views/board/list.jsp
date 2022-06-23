@@ -80,7 +80,7 @@ a {
 <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <script type="text/javascript">
 			
-	// 중복으로 쓰이는 selector 
+	// 중복으로 쓰이는 selector
 	const $boardDetail = $('#boardDetail')
 	const $detailBtn = $('#detailBtn')
 	const $detailHeader = $('#detailHeader')
@@ -88,7 +88,7 @@ a {
 	const $selectRowNum = $('#selectRowNum')
 	const $searchBtn = $('#searchBtn')
 	
-	// 모듈화 ? 
+	// 모듈화 ?
 	const boardFunc = (function() {
 		const $searchForm = $('#searchForm')
 		
@@ -147,7 +147,7 @@ a {
 							'text': text,
 							'id': id,
 						})
-						
+			
 			return btn
 		}
 		
@@ -155,7 +155,7 @@ a {
 			const form = $('<form>', {
 				'method': 'POST',
 				'action': '/board/'+url
-			}) 
+			})
 			
 			return form
 		}
@@ -230,7 +230,7 @@ a {
 		}
 	})
 	
-	// 제목 클릭시 event 
+	// 제목 클릭시 event
 	$(document).on('click','a.boardTitle', (e) => {
 		e.preventDefault()
 		const $this = $(e.currentTarget)
@@ -268,12 +268,12 @@ a {
 		}
 	})
 	
-	// 글쓰기 버튼 클릭시 event 
+	// 글쓰기 버튼 클릭시 event
 	$('#doWrite').on('click', () => {
 		location.assign('/board/goWrite')
 	})
 	
-	// 수정 버튼 클릭시 event 
+	// 수정 버튼 클릭시 event
 	$(document).on('click', '#goUpdate',(e) => {
 		const $this = $(e.currentTarget)
 		
@@ -286,9 +286,9 @@ a {
 		form.append(idx)
 		form.appendTo('body')
 		form.submit()
-	}) 
+	})
 	
-	// 삭제버튼 클릭시 
+	// 삭제버튼 클릭시
 	$('#doDelete').on('click', () => {
 		const rowCheck = $('input[name=rowCheck]')
 		const checkedIdx = []
@@ -310,11 +310,11 @@ a {
 		}
 	})
 	
-	// 답글버튼 클릭시 
+	// 답글버튼 클릭시
 	$(document).on('click', '#replyWrite', (e) => {
 
 		const form = boardFunc.makeForm('goReWrite')
-		// 보내줘야할 parameter = idx(parentIdx로 사용), noticeYn 
+		// 보내줘야할 parameter = idx(parentIdx로 사용), noticeYn
 		const pIdx = boardFunc.makeHidden('parentIdx', $(e.currentTarget).data('parent-idx'))
 		
 		form.append(pIdx)
@@ -331,7 +331,7 @@ a {
 				
 				valCheck = true
 				break
-			} 
+			}
 		}
 		$('input[name=rowCheck]').prop('checked', valCheck)
 		$(e.currentTarget).prop('checked', valCheck)
@@ -347,6 +347,5 @@ a {
 		}
 		$('#allCheck').prop('checked', valCheck)
 	})
-	
 </script>
 </html>
