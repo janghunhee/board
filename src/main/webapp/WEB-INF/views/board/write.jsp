@@ -98,27 +98,15 @@
 		
 		let formCnt = 0
 		
-		const makeAjax = function(urlP, typeP, dataP, dataTypeP) {
+		const makeAjax = function(urlP, typeP, dataP, dataTypeP, contentTypeP) {
 			return $.ajax({
 				url: '/board/'+urlP,
 				type: typeP,
 				data: dataP ,
 				dataType: dataTypeP,
+				contentType : contentTypeP,
 				traditional: 'true'
 			})
-		}
-		
-		const makeInput = function(typeP, nameP) {
-			return $('<input>', {
-				'type' : typeP,
-				'name' : nameP
-			})
-		}
-		
-		const makeLabel = function(forP, valP) {
-			const $label = $('<label>', { 'for' : forP })
-			$label.text(valP)
-			return $label
 		}
 		
 		const writeForm = function() {
@@ -126,13 +114,14 @@
 			const $clone = $('#form0').clone()
 			const $checkbox = $clone.find('input[type=checkbox]')
 			
+			$clone.find('input, textarea').val('')
 			$clone.prop('id', 'form'+formCnt)
-			$clone.find('input[type=text]').val('')
-			$checkbox.prop('checked', false)
-			$checkbox.prop('disabled', false)
+			$checkbox.prop({
+					'checked' : false,
+					'disabled' : false
+			})
 			$checkbox.val('false')
 			$clone.find('.pswd').prop('disabled', true)
-			$clone.find('textarea').val('')
 			$clone.appendTo('#form')
 		}
 		
@@ -162,24 +151,17 @@
 			return boardList
 			
 		}
+		
 		const secretChange = function() {
-			$('input.secretYn').trigger('change')
+			$('input[name="secretYn"]').trigger('change')
 		}
 		
-		const valAlert = function(name) {
-			alert(name+'을 입력해주세요.')
-		}
-		
-
 		return {
-			makeInput : makeInput,
 			makeAjax : makeAjax,
 			writeForm : writeForm,
 			registForm : registForm,
-			makeLabel : makeLabel,
 			removeForm : removeForm,
-			secretChange : secretChange,
-			valAlert : valAlert
+			secretChange : secretChange
 		}
 	})()
 	
@@ -223,8 +205,10 @@
 			
 			if($notice.is(':checked')) {
 				$notice.val(true)
-				$secret.prop('checked', false)
-				$secret.prop('disabled', true)
+				$secret.prop({
+					'checked': false,
+					'disabled' : true
+				})
 				boardWrite.secretChange()
 			} else {
 				$notice.val(false)
@@ -255,7 +239,7 @@
 	$('#submit').on('click', (e) => {
 		let valChk = true
 
-		$('.formInput').each(function(){
+		/* $('.formInput').each(function(){
 			let valName = ''
 			if(!$(this).find('.title').val()) {
 				valName = $(this).find('.title').data('validate-name')
@@ -275,40 +259,35 @@
 				alert(valName+'을 입력해주세요.')
 				return false
 			}
-		})
-		
-		/* $('div.formInput :text, :checkbox, :password, textarea').each(function() {
+		}) */
+			
+		// 비용절감을 위해 each문을 formInput 전체가 아닌 필요한 태그들만 돌며 validation
+		$('div.formInput :text, :password, textarea').each(function(index, item) {
 			let valName = ''
 			
-			if(!$('.title').val()) {
-				valName = $(':text[name="title"]').data('validate-name')
-			} else if(!$(':text[name="writer"]').val()) {
-				valName = $(':text[name="writer"]').data('validate-name')
-			} else if($(':checkbox[name="secretYn"]').val() === 'true' && !$(':password').val()) {
-				valName = $(':password').data('validate-name')
-			} else if(!$('textarea').val()) {
-				valName = $('textarea').data('validate-name')
-			}
+			if(item.name == 'title' && !$(item).val()) {
+				valName = $(item).data('validateName')
+			} else if(item.name == 'writer' && !$(item).val()) {
+	            valName = $(item).data('validateName')
+	        } else if(item.name == 'pswd' && !$(item).val() && $(item).closest('div.formInput').find('input[name="secretYn"]').val() == 'true') {
+	            valName = $(item).data('validateName')
+	        } else if(item.name == 'content' && !$(item).val()) {
+	            valName = $(item).data('validateName')
+	        }
 			
 			if(valName) {
 				alert(valName+'을 입력해주세요.')
+				valChk = false
 				return false
 			}
-		}) */
+		})
 		
 		if(valChk){
-			$.ajax({
-				url : '/board/register.do',
-				type : 'POST',
-				contentType : 'application/json',
-				dataType : 'json',
-				data : JSON.stringify(boardWrite.registForm())
-			})
-			.success(function(result) {
+			boardWrite.makeAjax('register.do', 'POST', JSON.stringify(boardWrite.registForm()), 'json', 'application/json').success(function(result) {
 				if($('.idx').val() == '' && $('.parentIdx').val() == '' ){
 					const total = result.total
 					const success = result.success
-					alert('총 : '+total+' 성공 : '+success+' 실패 : '+(total-success))
+					alert('총 : '+ total +' 성공 : ' + success + ' 실패 : ' + (total-success))
 				} else {
 					alert('성공')
 				}
