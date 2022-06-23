@@ -59,42 +59,50 @@ public class BoardServiceImpl implements BoardService {
 	
 	// 등록,수정,댓글등록
 	@Override
-	@Transactional
 	public Map<String, Integer> registerBoard(List<BoardDTO> boardList) {
 		Map<String, Integer> rtnVal = new HashMap<String, Integer>();
-		List<BoardDTO> insertList = new ArrayList<BoardDTO>();
-		int resultCnt = 0;
+		int successCnt = 0;
+		int failCnt = 0;
 		BoardDTO board = boardList.get(0);
+		
+		// 글 수정 - idx , parentIdx null
+		if(board.getIdx() != null && board.getParentIdx() != null) {
+			try {
+				successCnt = boardMapper.updateBoard(board);
+				this.updateChild(board);
+			} catch(Exception e) {
+				failCnt++;
+			}
+		}
 
+		// 답글 등록 - idx null, parentIdx
+		if(board.getIdx() == null && board.getParentIdx() != null) {
+			board.setIdx(board.getIdx() == null ? boardMapper.getLastIdx() : board.getIdx());
+			this.setReorder(board);
+			try {
+				successCnt = boardMapper.insertBoard(board);
+			} catch(Exception e) {
+				failCnt++;
+			}
+		}
+		
 		// 새글등록 - idx null, parentIdx null
 		if(board.getIdx() == null && board.getParentIdx() == null) {
 			int getIdx = boardMapper.getLastIdx();
 			for(BoardDTO item : boardList) {
 				this.setReorder(item);
 				item.setIdx(getIdx++);
-//				resultCnt += boardMapper.insertBoard(item);
-				insertList.add(item);
+				try {
+					successCnt += boardMapper.insertBoard(item);
+				} catch (Exception e) {
+					failCnt++;
+				}
 			}
-			resultCnt = boardMapper.insertBoard(insertList);
-			
-			rtnVal.put("total", boardList.size());
-			rtnVal.put("success", resultCnt);
-			
-			return rtnVal;
 		}
 		
-		// 글 수정 - idx , parentIdx null
-		if(board.getIdx() != null && board.getParentIdx() != null) {
-			this.updateChild(board);
-			resultCnt = boardMapper.updateBoard(board);
-		}
-		
-		// 답글 등록 - idx null, parentIdx
-		if(board.getIdx() == null && board.getParentIdx() != null) {
-			board.setIdx(board.getIdx() == null ? boardMapper.getLastIdx() : board.getIdx());
-			this.setReorder(board);
-			resultCnt = boardMapper.insertBoard(boardList);
-		}
+		rtnVal.put("total", boardList.size());
+		rtnVal.put("success", successCnt);
+		rtnVal.put("fail", failCnt);
 		
 		return rtnVal;
 	}
@@ -115,7 +123,7 @@ public class BoardServiceImpl implements BoardService {
 	@Override
 	public BoardDTO setReWrite(BoardDTO boardDTO) {
 		//parent_idx를 가지고 부모글이 공지글인지 확인
-		boardDTO.setNoticeYn(boardMapper.selectBoardDetail((Integer) boardDTO.getParentIdx()).isNoticeYn());
+		boardDTO.setNoticeYn(boardMapper.selectBoardDetail(boardDTO.getParentIdx()).isNoticeYn());
 		
 		return boardDTO;
 	}

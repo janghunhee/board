@@ -35,7 +35,8 @@
 	</c:choose>
 	<div id="formDiv">
 		<form id="form">
-			<div id="form0" class="formInput">
+			<div id="form0" class="formInput" data-cnt="1">
+				<div><h3 id="formNum">1.</h3></div>
 				<div>
 					<input type="hidden" class="idx" name="idx" value='<c:out value="${ board.idx }" />' />
 					<input type="hidden" class="parentIdx" name="parentIdx" value='<c:out value="${ board.parentIdx }" />' />
@@ -113,9 +114,12 @@
 			++formCnt
 			const $clone = $('#form0').clone()
 			const $checkbox = $clone.find('input[type=checkbox]')
+			const formNum = formCnt + 1
 			
+			$clone.find('#formNum').text(formNum+'.')
 			$clone.find('input, textarea').val('')
 			$clone.prop('id', 'form'+formCnt)
+			$clone.attr('data-cnt', formNum)
 			$checkbox.prop({
 					'checked' : false,
 					'disabled' : false
@@ -175,6 +179,7 @@
 	
 	/* 수정으로 들어왔을 때 기본값 세팅 */
 	$(document).ready(function() {
+		const $parentVal = $('.parentIdx').val()
 		// 수정으로 들어왔을때 체크박스 기본값
 		$noticeYn.prop('checked', $noticeYn.val() === 'true' ? true : false)
 		$secretYn.prop('checked', $secretYn.val() === 'true' ? $pswd.prop('disabled', false) : false)
@@ -191,7 +196,7 @@
 		}
 		
 		// 답글일때
-		if($('.parentIdx').val() != '' && $('.parentIdx').val() != 0){
+		if($parentVal != '' && $parentVal != 0){
 			//공지 변경 x 부모의 공지를 따른다.
 			$noticeYn.prop('disabled', true)
 		} 
@@ -264,33 +269,28 @@
 		// 비용절감을 위해 each문을 formInput 전체가 아닌 필요한 태그들만 돌며 validation
 		$('div.formInput :text, :password, textarea').each(function(index, item) {
 			let valName = ''
+			const itemName = item.name
+			const itemVal = $(item).val()
+			const formInput = 'div.formInput'
 			
-			if(item.name == 'title' && !$(item).val()) {
-				valName = $(item).data('validateName')
-			} else if(item.name == 'writer' && !$(item).val()) {
-	            valName = $(item).data('validateName')
-	        } else if(item.name == 'pswd' && !$(item).val() && $(item).closest('div.formInput').find('input[name="secretYn"]').val() == 'true') {
-	            valName = $(item).data('validateName')
-	        } else if(item.name == 'content' && !$(item).val()) {
-	            valName = $(item).data('validateName')
-	        }
+			if( (itemName == 'title' && !itemVal) ||
+				(itemName =='writer' && !itemVal) ||
+				(itemName =='pswd' && !itemVal && $(item).closest(formInput).find('input[name="secretYn"]').val() == 'true') ||
+				(itemName =='content' && !itemVal)) {
+					valName = $(item).data('validateName')
+			} 
 			
 			if(valName) {
-				alert(valName+'을 입력해주세요.')
+				alert($(item).closest(formInput).data('cnt') + '번 글의 ' + valName+'을 입력해주세요.')
 				valChk = false
 				return false
 			}
 		})
 		
 		if(valChk){
-			boardWrite.makeAjax('register.do', 'POST', JSON.stringify(boardWrite.registForm()), 'json', 'application/json').success(function(result) {
-				if($('.idx').val() == '' && $('.parentIdx').val() == '' ){
-					const total = result.total
-					const success = result.success
-					alert('총 : '+ total +' 성공 : ' + success + ' 실패 : ' + (total-success))
-				} else {
-					alert('성공')
-				}
+			boardWrite.makeAjax('register.do', 'POST', JSON.stringify(boardWrite.registForm()), 'json', 'application/json')
+			.done(function(result) {
+				alert('총 : '+ result.total +' 성공 : ' + result.success + ' 실패 : ' + result.fail)
 				location.replace('/board/goList')
 			})
 		} 

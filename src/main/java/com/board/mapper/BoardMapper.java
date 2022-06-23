@@ -11,7 +11,7 @@ public interface BoardMapper {
 
 	public List<BoardDTO> selectBoardList(BoardDTO boardDTO);
 	
-	public int insertBoard(List<BoardDTO> boardList);
+	public int insertBoard(BoardDTO boardDTO);
 	
 	public BoardDTO selectBoardDetail(Integer idx);
 	
