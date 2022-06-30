@@ -94,7 +94,7 @@ a {
 		
 		const getDetailPswdChk = function(idxP, pswdP, secretYnP) {
 			
-			return new Promise((resolve, reject) => {
+			/* return new Promise((resolve, reject) => {
 				$.ajax({
 					url: '/board/listChk',
 					type: 'GET',
@@ -111,18 +111,26 @@ a {
 						reject(errorThrown)
 					}
 				})
-			})
+			}) */
+			param = {
+				idx: idxP,
+				pswd: pswdP,
+				secretYn: secretYnP
+			}
+			
+			return this.makeAjax('listChk', 'GET', param, 'json')
 		}
 		
 		const setBoardDetail = function(param) {
-			const noticeChk = param.Data.noticeYn ? '#공지#' : ''
+			const paramData = param.Data
+			const noticeChk = paramData.noticeYn ? '#공지#' : ''
 			
 			$detailHeader.text('게시글 상세')
 			$('#noticeDetail').text(noticeChk)
-			$('#titleDetail').text(param.Data.title)
-			$('#writerDetail').text(param.Data.writer)
-			$('#contentDetail').text(param.Data.content)
-			$('#viewCntDetail').text(param.Data.viewCnt)
+			$('#titleDetail').text(paramData.title)
+			$('#writerDetail').text(paramData.writer)
+			$('#contentDetail').text(paramData.content)
+			$('#viewCntDetail').text(paramData.viewCnt)
 			
 			$boardDetail.show()
 		}
@@ -175,7 +183,7 @@ a {
 					pageNum: pageNumP,
 					rowNum: rowNumP
 			}
-			this.makeAjax('list.do', 'POST', param, 'html').success(function(result) {
+			this.makeAjax('list.do', 'POST', param, 'html').done(function(result) {
 				$tableBody.html(result)
 			})
 		}
@@ -247,7 +255,7 @@ a {
 		if(secretYn) {
 			const pswdChk = prompt('비밀번호를 입력하세요')
 			boardFunc.getDetailPswdChk(idx, pswdChk, secretYn)
-			.then((board) => {
+			.done((board) => {
 				if(!board.Data){
 					$detailHeader.text('비밀글 입니다')
 					$boardDetail.hide()
@@ -261,7 +269,7 @@ a {
 			})
 		} else {
 			boardFunc.getDetailPswdChk(idx)
-			.then((board) => {
+			.done((board) => {
 				boardFunc.setBoardDetail(board)
 				boardFunc.appendBtn(upBtn, reBtn)
 			})

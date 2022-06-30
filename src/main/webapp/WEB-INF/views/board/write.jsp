@@ -160,12 +160,17 @@
 			$('input[name="secretYn"]').trigger('change')
 		}
 		
+		const valCheckfunc = function(itemVal, itemSel) {
+			return !itemVal ? itemSel.data('validateName') : ''
+		}
+		
 		return {
-			makeAjax : makeAjax,
-			writeForm : writeForm,
-			registForm : registForm,
-			removeForm : removeForm,
-			secretChange : secretChange
+			makeAjax,
+			writeForm,
+			registForm,
+			removeForm,
+			secretChange,
+			valCheckfunc
 		}
 	})()
 	
@@ -271,17 +276,43 @@
 			let valName = ''
 			const itemName = item.name
 			const itemVal = $(item).val()
-			const formInput = 'div.formInput'
-			
-			if( (itemName == 'title' && !itemVal) ||
-				(itemName =='writer' && !itemVal) ||
-				(itemName =='pswd' && !itemVal && $(item).closest(formInput).find('input[name="secretYn"]').val() == 'true') ||
-				(itemName =='content' && !itemVal)) {
-					valName = $(item).data('validateName')
+			const formInput = $(item).closest('div.formInput')
+			/* if( (itemName == 'title' && !itemVal) ||
+				   (itemName =='writer' && !itemVal) ||
+				   (itemName =='pswd' && !itemVal && $(item).closest(formInput).find('input[name="secretYn"]').val() == 'true') ||
+				   (itemName =='content' && !itemVal)) {
+						valName = $(item).data('validateName')
 			}
 			
 			if(valName) {
 				alert($(item).closest(formInput).data('cnt') + '번 글의 ' + valName+'을 입력해주세요.')
+				valChk = false
+				return false
+			} */
+			
+			/* const valCheckfunc = function() {
+				return valName = !itemVal ? $(item).data('validateName') : ''
+			} */
+			
+			switch(itemName) {
+				case 'title' :
+					valName = boardWrite.valCheckfunc(itemVal, $(item))
+					break
+				case 'writer' :
+					valName = boardWrite.valCheckfunc(itemVal, $(item))
+					break
+				case 'pswd' :
+					if(formInput.find('input[name="secretYn"]').val() == 'true') {
+						valName = boardWrite.valCheckfunc(itemVal, $(item))
+					}
+					break
+				case 'content' :
+					valName = boardWrite.valCheckfunc(itemVal, $(item))
+					break
+			}
+			
+			if(valName) {
+				alert(formInput.data('cnt') + '번 글의 ' + valName +'을 입력해주세요.')
 				valChk = false
 				return false
 			}
